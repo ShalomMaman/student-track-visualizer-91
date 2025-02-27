@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/27bda624-1ce8-44e5-bcdc-d3e48271c67f
+https://student-track-visualizer-24.lovable.app/
 
 ## How can I edit this code?
 
@@ -10,7 +10,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/27bda624-1ce8-44e5-bcdc-d3e48271c67f) and start prompting.
+Simply visit the [Lovable Project](https://student-track-visualizer-24.lovable.app/) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
