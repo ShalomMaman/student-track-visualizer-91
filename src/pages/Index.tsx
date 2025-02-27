@@ -538,8 +538,9 @@ const Index = () => {
         </div>
       </div>
       
-      {/* הוספת CSS לאנימציות */}
-      <style jsx>{`
+      {/* הוספת CSS לאנימציות - תיקון תגית הסטייל */}
+      <style>
+        {`
         @keyframes spin-wheel {
           from { transform: rotate(0deg); }
           to { transform: rotate(1080deg); }
@@ -548,7 +549,8 @@ const Index = () => {
         .animate-spin-wheel {
           animation: spin-wheel 3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
