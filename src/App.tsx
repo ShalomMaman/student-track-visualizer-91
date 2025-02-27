@@ -1,5 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import StudentProfile from "./pages/StudentProfile";
 import Assignments from "./pages/Assignments";
@@ -11,11 +12,11 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/student/:id" element={<StudentProfile />} />
-        <Route path="/assignments" element={<Assignments />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/add-student" element={<AddStudent />} />
+        <Route path="/" element={<AppLayout><Index /></AppLayout>} />
+        <Route path="/student/:id" element={<AppLayout><StudentProfile /></AppLayout>} />
+        <Route path="/assignments" element={<AppLayout><Assignments /></AppLayout>} />
+        <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+        <Route path="/add-student" element={<AppLayout><AddStudent /></AppLayout>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
