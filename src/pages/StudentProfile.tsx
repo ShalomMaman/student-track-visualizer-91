@@ -1,6 +1,7 @@
 
-import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, MessageCircle, GraduationCap, ListChecks, Trophy, Plus } from "lucide-react";
+import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, MessageCircle, GraduationCap, ListChecks, Trophy, Plus, Award, Gift, Star, Zap, Medal, Crown, Lock } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { StudentPerformanceChart } from "@/components/StudentPerformanceChart";
 import { SkillRadarChart } from "@/components/SkillRadarChart";
 import { UpcomingAssignments } from "@/components/UpcomingAssignments";
