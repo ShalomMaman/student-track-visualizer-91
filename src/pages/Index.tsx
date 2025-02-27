@@ -323,6 +323,31 @@ const Index = () => {
     setFilterGrade("");
   };
 
+  // טיפול בפתיחת וסגירת חלון הגדרות
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
+    // אם פותחים הגדרות, סוגרים התראות ופרסים
+    if (!showSettings) {
+      setShowNotifications(false);
+      setShowRewardsPreview(false);
+    }
+    
+    toast({
+      title: showSettings ? "הגדרות נסגרו" : "הגדרות נפתחו",
+      description: showSettings ? "השינויים נשמרו בהצלחה" : "כאן תוכל לשנות את הגדרות המערכת",
+    });
+  };
+
+  // טיפול בפתיחת וסגירת מערכת הפרסים
+  const toggleRewardsPreview = () => {
+    setShowRewardsPreview(!showRewardsPreview);
+    // אם פותחים פרסים, סוגרים התראות והגדרות
+    if (!showRewardsPreview) {
+      setShowNotifications(false);
+      setShowSettings(false);
+    }
+  };
+
   // פונקציה לסובב את גלגל המזל
   const spinLuckyWheel = () => {
     if (spinWheel) return;
@@ -431,30 +456,30 @@ const Index = () => {
   const uniqueGrades = [...new Set(students.map(student => student.grade))];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 animate-fade-up">
-        <header className="bg-white rounded-xl p-6 shadow-sm">
+    <div className="min-h-screen bg-[#fafafa] p-2 sm:p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 animate-fade-up">
+        <header className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2 w-full md:w-auto">
               <div className="flex items-center gap-3">
-                <LayoutDashboard className="w-6 h-6 text-primary" />
-                <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
+                <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
                   מעקב התקדמות תלמידים
                 </h1>
               </div>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base sm:text-lg text-muted-foreground">
                 ניטור וניתוח ביצועי תלמידים בזמן אמת
               </p>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
               {showSearch ? (
-                <div className="relative flex items-center animate-fade-in">
+                <div className="relative flex items-center animate-fade-in w-full sm:w-auto">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="חיפוש תלמידים..."
-                    className="px-4 py-2 pr-10 rounded-md bg-white border focus:outline-none focus:ring-2 focus:ring-primary/30 w-full md:w-auto"
+                    className="px-4 py-2 pr-10 rounded-md bg-white border focus:outline-none focus:ring-2 focus:ring-primary/30 w-full"
                     autoFocus
                   />
                   <X 
@@ -464,21 +489,27 @@ const Index = () => {
                 </div>
               ) : (
                 <button
+                  type="button"
                   onClick={handleSearchToggle}
-                  className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
                 >
-                  <Search className="w-5 h-5" />
-                  חיפוש
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="sm:inline">חיפוש</span>
                 </button>
               )}
               
               <div className="relative">
                 <button 
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm relative"
+                  type="button"
+                  onClick={() => {
+                    setShowNotifications(!showNotifications);
+                    setShowRewardsPreview(false);
+                    setShowSettings(false);
+                  }}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm relative"
                 >
-                  <Bell className="w-5 h-5" />
-                  התראות
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="sm:inline">התראות</span>
                   {notifications.filter(n => n.unread).length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
                       {notifications.filter(n => n.unread).length}
@@ -487,10 +518,11 @@ const Index = () => {
                 </button>
                 
                 {showNotifications && (
-                  <div className="absolute left-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg z-50 overflow-hidden animate-fade-up">
+                  <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg z-50 overflow-hidden animate-fade-up">
                     <div className="p-3 border-b bg-gray-50 flex justify-between items-center">
                       <h3 className="font-medium">התראות</h3>
                       <button 
+                        type="button"
                         className="text-xs text-primary hover:underline"
                         onClick={markAllNotificationsAsRead}
                       >
@@ -522,35 +554,120 @@ const Index = () => {
                       ))}
                     </div>
                     <div className="p-2 bg-gray-50 border-t text-center">
-                      <button className="text-sm text-primary hover:underline">צפייה בכל ההתראות</button>
+                      <button 
+                        type="button"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        צפייה בכל ההתראות
+                      </button>
                     </div>
                   </div>
                 )}
               </div>
               
               <button 
+                type="button"
                 onClick={() => navigate('/assignments')}
-                className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
               >
-                <ClipboardList className="w-5 h-5" />
-                משימות
+                <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="sm:inline">משימות</span>
               </button>
               <button 
-                onClick={() => setShowSettings(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
+                type="button"
+                onClick={toggleSettings}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
               >
-                <Cog className="w-5 h-5" />
-                הגדרות
+                <Cog className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="sm:inline">הגדרות</span>
               </button>
               <button 
-                onClick={() => setShowRewardsPreview(!showRewardsPreview)}
-                className="flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-yellow-500 to-amber-600 text-white transition-colors shadow-sm hover:shadow-md"
+                type="button"
+                onClick={toggleRewardsPreview}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md bg-gradient-to-r from-yellow-500 to-amber-600 text-white transition-colors shadow-sm hover:shadow-md"
               >
-                <Gift className="w-5 h-5" />
-                פרסים
+                <Gift className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="sm:inline">פרסים</span>
               </button>
             </div>
           </div>
+          
+          {/* חלון הגדרות (יוצג רק אם showSettings הוא true) */}
+          {showSettings && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-fade-up">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-medium text-lg flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-primary" />
+                  הגדרות מערכת
+                </h3>
+                <button 
+                  type="button"
+                  onClick={toggleSettings} 
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="font-medium text-sm">התראות במייל</label>
+                    <div className="relative inline-block w-12 h-6 rounded-full bg-gray-300">
+                      <input type="checkbox" className="sr-only" defaultChecked={true} />
+                      <span className="absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform transform translate-x-6"></span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <label className="font-medium text-sm">התראות בדחיפה</label>
+                    <div className="relative inline-block w-12 h-6 rounded-full bg-primary">
+                      <input type="checkbox" className="sr-only" defaultChecked={true} />
+                      <span className="absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform transform translate-x-6"></span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <label className="font-medium text-sm">סנכרון אוטומטי</label>
+                    <div className="relative inline-block w-12 h-6 rounded-full bg-primary">
+                      <input type="checkbox" className="sr-only" defaultChecked={true} />
+                      <span className="absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform transform translate-x-6"></span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="font-medium text-sm block mb-1">תכיפות התראות</label>
+                    <select className="w-full p-2 border rounded-md">
+                      <option>בזמן אמת</option>
+                      <option>אחת ליום</option>
+                      <option>אחת לשבוע</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="font-medium text-sm block mb-1">שפת ממשק</label>
+                    <select className="w-full p-2 border rounded-md">
+                      <option>עברית</option>
+                      <option>English</option>
+                      <option>العربية</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <button 
+                  type="button"
+                  onClick={toggleSettings}
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  שמור הגדרות
+                </button>
+              </div>
+            </div>
+          )}
           
           {/* סרגל סטטוס מערכת */}
           <div className="flex flex-wrap justify-between items-center gap-3 mt-4 pt-4 border-t">
@@ -560,11 +677,12 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={handleDownloadReport}
                 className="text-sm text-primary flex items-center gap-1 px-3 py-1.5 hover:bg-primary/5 rounded-md transition-colors"
               >
                 <Download className="w-4 h-4" />
-                <span>דו״ח למורה</span>
+                <span className="hidden sm:inline">דו״ח למורה</span>
               </button>
               <div className="h-4 border-r mx-1"></div>
               <AppVersionIndicator />
@@ -573,17 +691,17 @@ const Index = () => {
         </header>
         
         {/* חלק עליון - סיכומים, סקירה כללית וסטטיסטיקות */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
           {/* כרטיסי סיכום תקופתיים */}
-          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-green-100">
+          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border-2 border-green-100">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1 mb-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                     <h3 className="font-medium">התקדמות תלמידים</h3>
                   </div>
-                  <p className="text-3xl font-bold text-green-700">{weeklyStats.currentWeek.totalProgress}%</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-green-700">{weeklyStats.currentWeek.totalProgress}%</p>
                   <div className="flex items-center mt-1">
                     {progressImprovement.improved ? (
                       <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex items-center">
@@ -597,20 +715,23 @@ const Index = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-1 text-sm">
+                <div className="flex items-center gap-1 text-sm">
                   <button 
+                    type="button"
                     onClick={() => setTimeFrame("day")}
                     className={`px-2 py-1 rounded ${timeFrame === "day" ? "bg-gray-200" : "hover:bg-gray-100"}`}
                   >
                     יום
                   </button>
                   <button 
+                    type="button"
                     onClick={() => setTimeFrame("week")}
                     className={`px-2 py-1 rounded ${timeFrame === "week" ? "bg-gray-200" : "hover:bg-gray-100"}`}
                   >
                     שבוע
                   </button>
                   <button 
+                    type="button"
                     onClick={() => setTimeFrame("month")}
                     className={`px-2 py-1 rounded ${timeFrame === "month" ? "bg-gray-200" : "hover:bg-gray-100"}`}
                   >
@@ -620,14 +741,14 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-blue-100">
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border-2 border-blue-100">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1 mb-2">
-                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                     <h3 className="font-medium">ממוצע ציונים</h3>
                   </div>
-                  <p className="text-3xl font-bold text-blue-700">{weeklyStats.currentWeek.averageScore}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-700">{weeklyStats.currentWeek.averageScore}</p>
                   <div className="flex items-center mt-1">
                     {scoreImprovement.improved ? (
                       <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex items-center">
@@ -647,14 +768,14 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-purple-100">
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border-2 border-purple-100">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1 mb-2">
-                    <ClipboardList className="w-5 h-5 text-purple-600" />
+                    <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                     <h3 className="font-medium">משימות שהושלמו</h3>
                   </div>
-                  <p className="text-3xl font-bold text-purple-700">{weeklyStats.currentWeek.completedTasks}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-purple-700">{weeklyStats.currentWeek.completedTasks}</p>
                   <div className="flex items-center mt-1">
                     {tasksImprovement.improved ? (
                       <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex items-center">
@@ -678,66 +799,75 @@ const Index = () => {
           </div>
         
           {/* המידע הסטטיסטי */}
-          <div className="lg:col-span-8 bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl font-medium flex items-center gap-2">
-                <Zap className="w-5 h-5 text-yellow-500" />
+          <div className="lg:col-span-8 bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="font-display text-lg sm:text-xl font-medium flex items-center gap-2">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                 סקירה כללית
               </h2>
               <div className="flex gap-2">
-                <button className="text-xs border rounded-md px-2 py-1 text-gray-600 hover:bg-gray-50">
+                <button 
+                  type="button"
+                  className="text-xs border rounded-md px-2 py-1 text-gray-600 hover:bg-gray-50"
+                >
                   היום
                 </button>
-                <button className="text-xs border rounded-md px-2 py-1 text-gray-600 hover:bg-gray-50 bg-gray-50">
+                <button 
+                  type="button"
+                  className="text-xs border rounded-md px-2 py-1 text-gray-600 hover:bg-gray-50 bg-gray-50"
+                >
                   שבוע אחרון
                 </button>
-                <button className="text-xs border rounded-md px-2 py-1 text-gray-600 hover:bg-gray-50">
+                <button 
+                  type="button"
+                  className="text-xs border rounded-md px-2 py-1 text-gray-600 hover:bg-gray-50"
+                >
                   חודש אחרון
                 </button>
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                <div className="flex items-center gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 sm:p-4 border border-blue-200">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-blue-500/10 p-2 rounded-full">
-                    <User className="w-6 h-6 text-blue-600" />
+                    <User className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-blue-900">סך הכל תלמידים</p>
-                    <h3 className="text-2xl font-bold text-blue-700">{totalStudents}</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-blue-700">{totalStudents}</h3>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 sm:p-4 border border-green-200">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-green-500/10 p-2 rounded-full">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-green-900">ממוצע התקדמות</p>
-                    <h3 className="text-2xl font-bold text-green-700">{averageProgress}%</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-green-700">{averageProgress}%</h3>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-                <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 sm:p-4 border border-purple-200">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-purple-500/10 p-2 rounded-full">
-                    <BookOpen className="w-6 h-6 text-purple-600" />
+                    <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-purple-900">מקצועות נלמדים</p>
-                    <h3 className="text-2xl font-bold text-purple-700">{subjectsCount}</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-purple-700">{subjectsCount}</h3>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" />
+            <div className="border-t pt-4 sm:pt-6">
+              <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 פעילות אחרונה
               </h3>
               <div className="space-y-3">
@@ -745,7 +875,7 @@ const Index = () => {
                   <div key={activity.id} className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="relative w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-medium">
+                        <div className="relative w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-medium">
                           {activity.studentName.substring(0, 1)}
                         </div>
                         <div>
@@ -755,7 +885,7 @@ const Index = () => {
                           >
                             {activity.studentName}
                           </h4>
-                          <p className="text-sm text-gray-600">{activity.activity}</p>
+                          <p className="text-xs sm:text-sm text-gray-600">{activity.activity}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -777,7 +907,10 @@ const Index = () => {
                 ))}
               </div>
               <div className="text-center mt-4">
-                <button className="text-sm text-primary hover:underline flex items-center gap-1 mx-auto">
+                <button 
+                  type="button"
+                  className="text-sm text-primary hover:underline flex items-center gap-1 mx-auto"
+                >
                   צפייה בכל הפעילויות
                   <ArrowUpRight className="w-3 h-3" />
                 </button>
@@ -786,10 +919,10 @@ const Index = () => {
           </div>
           
           {/* אזור ימני - מטלות קרובות וסיכום מערכת הפרסים */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-4">
-                <Calendar className="w-5 h-5 text-red-500" />
+          <div className="lg:col-span-4 space-y-4 sm:space-y-6">
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+              <h2 className="font-display text-lg sm:text-xl font-medium flex items-center gap-2 mb-4">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
                 מטלות קרובות
               </h2>
               
@@ -803,8 +936,8 @@ const Index = () => {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium">{task.title}</h4>
-                        <span className="text-sm text-gray-600 block mt-1">{task.date}</span>
+                        <h4 className="font-medium text-sm sm:text-base">{task.title}</h4>
+                        <span className="text-xs sm:text-sm text-gray-600 block mt-1">{task.date}</span>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                         task.daysLeft <= 3 
@@ -826,6 +959,7 @@ const Index = () => {
               </div>
               
               <button 
+                type="button"
                 onClick={() => navigate('/assignments')}
                 className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5"
               >
@@ -835,47 +969,48 @@ const Index = () => {
             </div>
             
             {/* סיכום מערכת הפרסים */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-4">
-                <Trophy className="w-5 h-5 text-yellow-500" />
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+              <h2 className="font-display text-lg sm:text-xl font-medium flex items-center gap-2 mb-4">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                 מערכת הפרסים
               </h2>
               
-              <div className="flex items-center gap-4 py-3 border-b">
-                <div className="bg-gradient-to-br from-yellow-200 to-amber-300 rounded-full p-3 relative">
-                  <Trophy className="w-6 h-6 text-amber-700" />
+              <div className="flex items-center gap-3 sm:gap-4 py-3 border-b">
+                <div className="bg-gradient-to-br from-yellow-200 to-amber-300 rounded-full p-2 sm:p-3 relative">
+                  <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-700" />
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs flex items-center justify-center rounded-full font-bold">
                     4
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-medium">פרסים ממתינים לחלוקה</h4>
-                  <p className="text-sm text-gray-600">יש 4 תלמידים שהשיגו פרסים חדשים</p>
+                  <h4 className="font-medium text-sm sm:text-base">פרסים ממתינים לחלוקה</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">יש 4 תלמידים שהשיגו פרסים חדשים</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-4 py-3 border-b">
-                <div className="bg-gradient-to-br from-purple-200 to-indigo-300 rounded-full p-3">
-                  <Crown className="w-6 h-6 text-indigo-700" />
+              <div className="flex items-center gap-3 sm:gap-4 py-3 border-b">
+                <div className="bg-gradient-to-br from-purple-200 to-indigo-300 rounded-full p-2 sm:p-3">
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-700" />
                 </div>
                 <div>
-                  <h4 className="font-medium">רמות אווטר חדשות</h4>
-                  <p className="text-sm text-gray-600">2 תלמידים עלו רמה השבוע</p>
+                  <h4 className="font-medium text-sm sm:text-base">רמות אווטר חדשות</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">2 תלמידים עלו רמה השבוע</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-4 py-3">
-                <div className="bg-gradient-to-br from-green-200 to-teal-300 rounded-full p-3">
-                  <Star className="w-6 h-6 text-teal-700" />
+              <div className="flex items-center gap-3 sm:gap-4 py-3">
+                <div className="bg-gradient-to-br from-green-200 to-teal-300 rounded-full p-2 sm:p-3">
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-teal-700" />
                 </div>
                 <div>
-                  <h4 className="font-medium">תלמידי השבוע</h4>
-                  <p className="text-sm text-gray-600">מיכל ברק ושרה לוי</p>
+                  <h4 className="font-medium text-sm sm:text-base">תלמידי השבוע</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">מיכל ברק ושרה לוי</p>
                 </div>
               </div>
               
               <button 
-                onClick={() => setShowRewardsPreview(true)}
+                type="button"
+                onClick={toggleRewardsPreview}
                 className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5"
               >
                 <Gift className="w-4 h-4" />
@@ -884,9 +1019,9 @@ const Index = () => {
             </div>
             
             {/* חדש: טיפים מקצועיים */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border-2 border-blue-100">
-              <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-4">
-                <Lightbulb className="w-5 h-5 text-yellow-500" />
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border-2 border-blue-100">
+              <h2 className="font-display text-lg sm:text-xl font-medium flex items-center gap-2 mb-4">
+                <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                 טיפים פדגוגיים
               </h2>
               
@@ -897,12 +1032,12 @@ const Index = () => {
                     className="border rounded-lg p-3 hover:border-primary hover:bg-blue-50/30 transition-all cursor-pointer"
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-medium">{tip.title}</h4>
+                      <h4 className="font-medium text-sm sm:text-base">{tip.title}</h4>
                       <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
                         {tip.category}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">{tip.description}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">{tip.description}</p>
                     <div className="flex items-center justify-between mt-2">
                       <div className="w-full bg-gray-100 h-1.5 rounded-full mr-2">
                         <div 
@@ -916,7 +1051,10 @@ const Index = () => {
                 ))}
               </div>
               
-              <button className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5">
+              <button 
+                type="button"
+                className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5"
+              >
                 <Lightbulb className="w-4 h-4" />
                 כל הטיפים הפדגוגיים
               </button>
@@ -926,217 +1064,243 @@ const Index = () => {
 
         {/* אזור מערכת הפרסים והתמריצים */}
         {showRewardsPreview && (
-          <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 shadow-sm animate-fade-up border border-purple-100">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl font-semibold text-primary flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                <span>מערכת הפרסים והאווטרים</span>
-              </h2>
-              <button
-                onClick={() => setShowRewardsPreview(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              {/* מידע כללי והתקדמות */}
-              <div className="md:col-span-3 bg-white rounded-lg p-4 shadow-sm border border-purple-100">
-                <div className="space-y-4">
-                  <div className="flex flex-col items-center">
-                    <div className="bg-primary/10 rounded-full w-20 h-20 flex items-center justify-center mb-2">
-                      <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center relative">
-                        <Star className="w-10 h-10 text-yellow-500 fill-yellow-500" />
-                        <div className="absolute -top-1 -right-1 bg-primary rounded-full w-6 h-6 flex items-center justify-center text-white text-xs font-bold">
-                          {rewardsSystem.level}
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="font-medium">הנקודות שלי</h3>
-                    <p className="text-2xl font-bold text-primary">{rewardsSystem.points}</p>
-                    <div className="flex items-center gap-1 text-xs text-yellow-600 mt-1">
-                      <Star className="w-3 h-3 fill-yellow-500" />
-                      <span>רצף של {rewardsSystem.streakDays} ימים</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3">
-                    <h4 className="text-sm font-medium mb-2 text-center">האווטר שלי</h4>
-                    <div className="flex justify-center flex-wrap gap-2">
-                      {rewardsSystem.avatarItems.map((item) => (
-                        <div 
-                          key={item.id}
-                          className="bg-white rounded-lg p-1 w-14 h-14 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => navigate('/student/1')}
-                        >
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            className="w-8 h-8 object-contain"
-                          />
-                          <div className="text-[10px] mt-1 text-center truncate w-full">
-                            {item.name}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="text-center mt-2">
-                      <button
-                        onClick={() => navigate('/student/1')}
-                        className="text-xs text-primary hover:underline"
-                      >
-                        ערוך את האווטר שלך
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* הפרסים הבאים */}
-              <div className="md:col-span-5 bg-white rounded-lg p-4 shadow-sm border border-purple-100">
-                <h3 className="font-medium mb-3 flex items-center gap-2">
-                  <Gift className="w-4 h-4 text-primary" />
-                  הפרסים הבאים שלך
-                </h3>
-                
-                <div className="space-y-3">
-                  {rewardsSystem.nextRewards.map((reward) => (
-                    <div key={reward.id} className="border rounded-lg p-3 hover:bg-accent/20 transition-colors cursor-pointer" onClick={() => navigate('/student/1')}>
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={reward.image} 
-                          alt={reward.title}
-                          className="w-12 h-12 object-contain opacity-75"
-                        />
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-medium">{reward.title}</h4>
-                            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                              {reward.points} נקודות
-                            </span>
-                          </div>
-                          <div className="mt-2">
-                            <div className="h-1.5 w-full bg-gray-200 rounded-full">
-                              <div 
-                                className="bg-primary h-1.5 rounded-full"
-                                style={{ width: `${reward.progress}%` }}  
-                              ></div>
-                            </div>
-                            <div className="flex justify-between text-xs mt-1">
-                              <span>{rewardsSystem.points} נקודות</span>
-                              <span>חסר {reward.points - rewardsSystem.points} נקודות</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={() => navigate('/student/1')}
-                    className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors"
-                  >
-                    הצג את כל הפרסים
-                  </button>
-                </div>
-              </div>
-              
-              {/* גלגל המזל */}
-              <div className="md:col-span-4 bg-white rounded-lg p-4 shadow-sm border border-purple-100 flex flex-col items-center">
-                <h3 className="font-medium text-center mb-3 flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-yellow-500" />
-                  גלגל המזל השבועי
-                </h3>
-                
-                <div className="relative w-48 h-48 my-3">
-                  <div 
-                    className={`w-full h-full rounded-full overflow-hidden transition-transform duration-3000 ${spinWheel ? 'animate-spin-wheel' : ''}`}
-                    style={{ 
-                      transformOrigin: 'center',
-                      transform: wheelResult !== null ? `rotate(${wheelResult * 45 + 1080}deg)` : 'rotate(0deg)'
-                    }}
-                  >
-                    <svg viewBox="0 0 100 100" className="w-full h-full">
-                      {rewardsSystem.wheelPrizes.map((prize, index) => {
-                        const angle = 360 / rewardsSystem.wheelPrizes.length;
-                        const rotation = index * angle;
-                        
-                        return (
-                          <g key={prize.id} transform={`rotate(${rotation} 50 50)`}>
-                            <path 
-                              d={`M 50 50 L 50 0 A 50 50 0 0 1 ${50 + 50 * Math.sin(angle * Math.PI / 180)} ${50 - 50 * Math.cos(angle * Math.PI / 180)} Z`}
-                              fill={prize.color}
-                            />
-                            <text
-                              x="50"
-                              y="20"
-                              fontSize="4"
-                              fill="white"
-                              fontWeight="bold"
-                              textAnchor="middle"
-                              transform={`rotate(${-rotation + angle/2} 50 50)`}
-                            >
-                              {prize.title}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-                  </div>
-                  
-                  {/* המחוג */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-4 h-8 z-10">
-                    <div className="w-0 h-0 border-l-8 border-r-8 border-b-[16px] border-l-transparent border-r-transparent border-b-red-600"></div>
-                  </div>
-                  
-                  {/* תוצאת ההגרלה */}
-                  {wheelResult !== null && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white/80 backdrop-blur-sm rounded-full p-3 text-center font-bold">
-                        <p style={{ color: rewardsSystem.wheelPrizes[wheelResult].color }}>{rewardsSystem.wheelPrizes[wheelResult].title}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <button 
-                  onClick={spinLuckyWheel}
-                  disabled={spinWheel}
-                  className={`mt-4 px-6 py-2 rounded-full font-medium text-white transition-colors ${
-                    spinWheel 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md hover:shadow-lg'
-                  }`}
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-4 animate-fade-in">
+            <div 
+              className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 shadow-lg border border-purple-100 w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-fade-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="font-display text-lg sm:text-xl font-semibold text-primary flex items-center gap-2">
+                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                  <span>מערכת הפרסים והאווטרים</span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={toggleRewardsPreview}
+                  className="text-gray-500 hover:text-gray-700"
                 >
-                  {spinWheel ? 'מסתובב...' : 'סובב את הגלגל'}
+                  <X className="w-5 h-5" />
                 </button>
-                
-                <p className="text-xs text-center text-muted-foreground mt-2">
-                  זמין פעם בשבוע | הסיבוב הבא: בעוד 5 ימים
-                </p>
               </div>
-            </div>
-            
-            <div className="mt-6 flex justify-center">
-              <button
-                onClick={() => navigate('/student/1')}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2"
-              >
-                <Award className="w-5 h-5" />
-                <span>עבור למערכת הפרסים המלאה</span>
-              </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
+                {/* מידע כללי והתקדמות */}
+                <div className="md:col-span-3 bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-purple-100">
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-center">
+                      <div className="bg-primary/10 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mb-2">
+                        <div className="bg-white rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center relative">
+                          <Star className="w-7 h-7 sm:w-10 sm:h-10 text-yellow-500 fill-yellow-500" />
+                          <div className="absolute -top-1 -right-1 bg-primary rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-white text-xs font-bold">
+                            {rewardsSystem.level}
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="font-medium">הנקודות שלי</h3>
+                      <p className="text-xl sm:text-2xl font-bold text-primary">{rewardsSystem.points}</p>
+                      <div className="flex items-center gap-1 text-xs text-yellow-600 mt-1">
+                        <Star className="w-3 h-3 fill-yellow-500" />
+                        <span>רצף של {rewardsSystem.streakDays} ימים</span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3">
+                      <h4 className="text-sm font-medium mb-2 text-center">האווטר שלי</h4>
+                      <div className="flex justify-center flex-wrap gap-2">
+                        {rewardsSystem.avatarItems.map((item) => (
+                          <div 
+                            key={item.id}
+                            className="bg-white rounded-lg p-1 w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-shadow"
+                            onClick={() => navigate('/student/1')}
+                          >
+                            <img 
+                              src={item.image} 
+                              alt={item.name}
+                              className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                            />
+                            <div className="text-[9px] sm:text-[10px] mt-1 text-center truncate w-full">
+                              {item.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-center mt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigate('/student/1');
+                            toggleRewardsPreview();
+                          }}
+                          className="text-xs text-primary hover:underline"
+                        >
+                          ערוך את האווטר שלך
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* הפרסים הבאים */}
+                <div className="md:col-span-5 bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-purple-100">
+                  <h3 className="font-medium mb-3 flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-primary" />
+                    הפרסים הבאים שלך
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {rewardsSystem.nextRewards.map((reward) => (
+                      <div 
+                        key={reward.id} 
+                        className="border rounded-lg p-3 hover:bg-accent/20 transition-colors cursor-pointer" 
+                        onClick={() => {
+                          navigate('/student/1');
+                          toggleRewardsPreview();
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={reward.image} 
+                            alt={reward.title}
+                            className="w-10 h-10 sm:w-12 sm:h-12 object-contain opacity-75"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <h4 className="font-medium text-sm">{reward.title}</h4>
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                {reward.points} נקודות
+                              </span>
+                            </div>
+                            <div className="mt-2">
+                              <div className="h-1.5 w-full bg-gray-200 rounded-full">
+                                <div 
+                                  className="bg-primary h-1.5 rounded-full"
+                                  style={{ width: `${reward.progress}%` }}  
+                                ></div>
+                              </div>
+                              <div className="flex justify-between text-xs mt-1">
+                                <span>{rewardsSystem.points} נקודות</span>
+                                <span>חסר {reward.points - rewardsSystem.points} נקודות</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigate('/student/1');
+                        toggleRewardsPreview();
+                      }}
+                      className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors"
+                    >
+                      הצג את כל הפרסים
+                    </button>
+                  </div>
+                </div>
+                
+                {/* גלגל המזל */}
+                <div className="md:col-span-4 bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-purple-100 flex flex-col items-center">
+                  <h3 className="font-medium text-center mb-3 flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-yellow-500" />
+                    גלגל המזל השבועי
+                  </h3>
+                  
+                  <div className="relative w-36 h-36 sm:w-48 sm:h-48 my-3">
+                    <div 
+                      className={`w-full h-full rounded-full overflow-hidden transition-transform duration-3000 ${spinWheel ? 'animate-spin-wheel' : ''}`}
+                      style={{ 
+                        transformOrigin: 'center',
+                        transform: wheelResult !== null ? `rotate(${wheelResult * 45 + 1080}deg)` : 'rotate(0deg)'
+                      }}
+                    >
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        {rewardsSystem.wheelPrizes.map((prize, index) => {
+                          const angle = 360 / rewardsSystem.wheelPrizes.length;
+                          const rotation = index * angle;
+                          
+                          return (
+                            <g key={prize.id} transform={`rotate(${rotation} 50 50)`}>
+                              <path 
+                                d={`M 50 50 L 50 0 A 50 50 0 0 1 ${50 + 50 * Math.sin(angle * Math.PI / 180)} ${50 - 50 * Math.cos(angle * Math.PI / 180)} Z`}
+                                fill={prize.color}
+                              />
+                              <text
+                                x="50"
+                                y="20"
+                                fontSize="4"
+                                fill="white"
+                                fontWeight="bold"
+                                textAnchor="middle"
+                                transform={`rotate(${-rotation + angle/2} 50 50)`}
+                              >
+                                {prize.title}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                    
+                    {/* המחוג */}
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-4 h-8 z-10">
+                      <div className="w-0 h-0 border-l-8 border-r-8 border-b-[16px] border-l-transparent border-r-transparent border-b-red-600"></div>
+                    </div>
+                    
+                    {/* תוצאת ההגרלה */}
+                    {wheelResult !== null && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-full p-3 text-center font-bold">
+                          <p style={{ color: rewardsSystem.wheelPrizes[wheelResult].color }}>{rewardsSystem.wheelPrizes[wheelResult].title}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <button 
+                    type="button"
+                    onClick={spinLuckyWheel}
+                    disabled={spinWheel}
+                    className={`mt-4 px-5 sm:px-6 py-2 rounded-full font-medium text-white transition-colors ${
+                      spinWheel 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md hover:shadow-lg'
+                    }`}
+                  >
+                    {spinWheel ? 'מסתובב...' : 'סובב את הגלגל'}
+                  </button>
+                  
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    זמין פעם בשבוע | הסיבוב הבא: בעוד 5 ימים
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate('/student/1');
+                    toggleRewardsPreview();
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 sm:px-6 py-2 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2"
+                >
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>עבור למערכת הפרסים המלאה</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* פילטרים וחיפוש תלמידים */}
-        <div className="bg-white rounded-xl p-6 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
-            <h2 className="font-display text-xl font-medium flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-purple-600" />
+            <h2 className="font-display text-lg sm:text-xl font-medium flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               תלמידים
             </h2>
             
@@ -1145,6 +1309,7 @@ const Index = () => {
               <div className="flex gap-2 flex-wrap">
                 {uniqueGrades.map(grade => (
                   <button
+                    type="button"
                     key={grade}
                     onClick={() => setFilterGrade(filterGrade === grade ? "" : grade)}
                     className={`px-3 py-1 text-sm rounded-full transition-colors ${
@@ -1158,6 +1323,7 @@ const Index = () => {
                 ))}
                 {(filterGrade || searchQuery) && (
                   <button
+                    type="button"
                     onClick={handleClearFilters}
                     className="px-3 py-1 text-sm rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors flex items-center gap-1"
                   >
@@ -1171,13 +1337,17 @@ const Index = () => {
           
           <div className="flex items-center justify-end mb-2">
             <button 
+              type="button"
               onClick={handleAddStudent}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-primary hover:bg-primary/5 transition-colors"
             >
               <UserPlus className="w-4 h-4" />
               הוסף תלמיד חדש
             </button>
-            <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <button 
+              type="button"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
               <Filter className="w-4 h-4" />
               סינון מתקדם
             </button>
@@ -1185,7 +1355,7 @@ const Index = () => {
         </div>
 
         {/* כרטיסי תלמידים */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredStudents.length > 0 ? (
             filteredStudents.map((student) => (
               <StudentCard 
@@ -1195,13 +1365,14 @@ const Index = () => {
               />
             ))
           ) : (
-            <div className="col-span-full bg-white rounded-xl p-6 shadow-sm text-center">
-              <div className="py-8 flex flex-col items-center">
-                <div className="bg-gray-100 rounded-full p-6 mb-4">
-                  <User className="w-10 h-10 text-gray-400" />
+            <div className="col-span-full bg-white rounded-xl p-4 sm:p-6 shadow-sm text-center">
+              <div className="py-6 sm:py-8 flex flex-col items-center">
+                <div className="bg-gray-100 rounded-full p-4 sm:p-6 mb-4">
+                  <User className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
                 </div>
-                <p className="text-lg text-muted-foreground">לא נמצאו תלמידים מתאימים לחיפוש</p>
+                <p className="text-base sm:text-lg text-muted-foreground">לא נמצאו תלמידים מתאימים לחיפוש</p>
                 <button
+                  type="button"
                   onClick={handleClearFilters}
                   className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
                 >
@@ -1211,14 +1382,15 @@ const Index = () => {
             </div>
           )}
           <button
+            type="button"
             onClick={handleAddStudent}
-            className="flex flex-col items-center justify-center gap-2 bg-white rounded-xl p-6 border-2 border-dashed border-gray-300 hover:border-primary hover:bg-accent/20 transition-all cursor-pointer h-[260px]"
+            className="flex flex-col items-center justify-center gap-2 bg-white rounded-xl p-4 sm:p-6 border-2 border-dashed border-gray-300 hover:border-primary hover:bg-accent/20 transition-all cursor-pointer h-[220px] sm:h-[260px]"
           >
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-              <Plus className="w-8 h-8 text-gray-400" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+              <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
             </div>
-            <span className="text-lg font-medium">הוסף תלמיד חדש</span>
-            <p className="text-sm text-gray-500 text-center max-w-[200px]">
+            <span className="text-base sm:text-lg font-medium">הוסף תלמיד חדש</span>
+            <p className="text-xs sm:text-sm text-gray-500 text-center max-w-[180px] sm:max-w-[200px]">
               הוסף פרטי תלמיד חדש למערכת המעקב והתגמולים
             </p>
           </button>
@@ -1228,26 +1400,26 @@ const Index = () => {
         <div 
           className={`transition-opacity duration-700 ease-in-out ${visibleCharts ? 'opacity-100' : 'opacity-0'}`}
         >
-          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-6">
-              <BookOpen className="w-5 h-5 text-blue-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm mb-6">
+            <h2 className="font-display text-lg sm:text-xl font-medium flex items-center gap-2 mb-4 sm:mb-6">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
               ניתוח ביצועי תלמידים
             </h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <h3 className="font-medium mb-3 text-lg">התקדמות לפי חודשים</h3>
-                <div className="h-[300px]">
+                <h3 className="font-medium mb-3 text-base sm:text-lg">התקדמות לפי חודשים</h3>
+                <div className="h-[250px] sm:h-[300px]">
                   <PerformanceChart />
                 </div>
               </div>
               
               <div>
-                <h3 className="font-medium mb-3 text-lg">התפלגות מקצועות לימוד</h3>
-                <div className="h-[300px] flex items-center justify-center">
+                <h3 className="font-medium mb-3 text-base sm:text-lg">התפלגות מקצועות לימוד</h3>
+                <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
                   {/* This is a placeholder for a future subject distribution chart */}
                   <div className="text-center text-muted-foreground">
-                    <div className="w-32 h-32 mx-auto rounded-full border-8 border-t-primary border-r-blue-400 border-b-orange-400 border-l-green-400 animate-spin"></div>
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-full border-8 border-t-primary border-r-blue-400 border-b-orange-400 border-l-green-400 animate-spin"></div>
                     <p className="mt-4">נתונים מתעדכנים...</p>
                   </div>
                 </div>
@@ -1267,6 +1439,15 @@ const Index = () => {
         
         .animate-spin-wheel {
           animation: spin-wheel 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
         }
         `}
       </style>
