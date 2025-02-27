@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   ArrowRight, 
   CheckCircle, 
@@ -9,12 +9,10 @@ import {
   Filter, 
   Plus, 
   Search, 
-  SortAsc,
   Tag, 
   X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AssignmentItem } from "../components/AssignmentItem";
 
 // סטטוס משימות
 type AssignmentStatus = "all" | "completed" | "in-progress" | "not-started";
@@ -30,9 +28,6 @@ interface Assignment {
   description?: string;
 }
 
-// סוג מיון
-type SortType = "dueDate" | "name" | "status";
-
 const Assignments = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<AssignmentStatus>("all");
@@ -41,8 +36,6 @@ const Assignments = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [sortBy, setSortBy] = useState<SortType>("dueDate");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
   // ערכים למשימה חדשה
   const [newAssignment, setNewAssignment] = useState<Partial<Assignment>>({
@@ -106,38 +99,6 @@ const Assignments = () => {
     }
   ];
 
-  // מיון משימות
-  const sortAssignments = (assignments: Assignment[]) => {
-    return [...assignments].sort((a, b) => {
-      if (sortBy === "dueDate") {
-        // מיון לפי תאריך
-        const dateA = a.dueDate.split("/").reverse().join("");
-        const dateB = b.dueDate.split("/").reverse().join("");
-        return sortDirection === "asc" 
-          ? dateA.localeCompare(dateB) 
-          : dateB.localeCompare(dateA);
-      } else if (sortBy === "name") {
-        // מיון לפי שם
-        return sortDirection === "asc" 
-          ? a.name.localeCompare(b.name) 
-          : b.name.localeCompare(a.name);
-      } else if (sortBy === "status") {
-        // מיון לפי סטטוס - לפי סדר: טרם התחיל, בתהליך, הושלם
-        const statusOrder = {
-          "not-started": 1,
-          "in-progress": 2,
-          "completed": 3
-        };
-        const orderA = statusOrder[a.status];
-        const orderB = statusOrder[b.status];
-        return sortDirection === "asc" 
-          ? orderA - orderB 
-          : orderB - orderA;
-      }
-      return 0;
-    });
-  };
-
   // סינון משימות לפי סטטוס, נושא וחיפוש
   const filteredAssignments = assignments.filter(assignment => {
     // סינון לפי סטטוס
@@ -158,9 +119,6 @@ const Assignments = () => {
     
     return true;
   });
-
-  // מיון אחרי סינון
-  const sortedAndFilteredAssignments = sortAssignments(filteredAssignments);
 
   // פונקציה להצגת צבע לפי סטטוס המשימה
   const getStatusColor = (status: Assignment["status"]) => {
@@ -231,21 +189,19 @@ const Assignments = () => {
     setShowDetailsModal(true);
   };
 
-  // פונקציה לטיפול במיון
-  const handleSort = (type: SortType) => {
-    if (sortBy === type) {
-      // אם לוחצים על אותו סוג מיון, משנים את כיוון המיון
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      // אם לוחצים על סוג מיון אחר, משנים את סוג המיון ומאפסים את כיוון המיון
-      setSortBy(type);
-      setSortDirection("asc");
-    }
-  };
-
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#fafafa] p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center gap-2 mb-6">
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center text-primary hover:underline"
+          >
+            <ArrowRight className="w-4 h-4 ml-1" />
+            חזרה לדשבורד
+          </button>
+        </div>
+
         <header className="space-y-2">
           <div className="flex items-center gap-3">
             <ClipboardCheck className="w-6 h-6 text-primary" />
@@ -257,7 +213,7 @@ const Assignments = () => {
         </header>
 
         {/* פקדי סינון וחיפוש */}
-        <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-in">
+        <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-up">
           <div className="flex flex-col md:flex-row gap-4 justify-between">
             <div className="flex gap-2 flex-wrap">
               <button
@@ -294,7 +250,7 @@ const Assignments = () => {
               </button>
             </div>
             
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <input
@@ -302,7 +258,7 @@ const Assignments = () => {
                   placeholder="חיפוש משימות..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border rounded-md py-2 px-9 w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="border rounded-md py-2 px-9 w-full focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
               
@@ -332,60 +288,46 @@ const Assignments = () => {
         </div>
 
         {/* רשימת משימות */}
-        <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-in">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-lg font-medium">רשימת משימות</h2>
-            
-            {/* פקדי מיון */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">מיון לפי:</span>
-              <div className="flex border rounded-md overflow-hidden">
-                <button
-                  onClick={() => handleSort("dueDate")}
-                  className={`px-3 py-1.5 text-xs font-medium flex items-center ${
-                    sortBy === "dueDate" ? "bg-accent/80" : "bg-accent/30"
-                  }`}
-                >
-                  תאריך {sortBy === "dueDate" && (
-                    <SortAsc className={`w-3 h-3 mr-1 ${sortDirection === "desc" && "transform rotate-180"}`} />
-                  )}
-                </button>
-                <button
-                  onClick={() => handleSort("name")}
-                  className={`px-3 py-1.5 text-xs font-medium flex items-center ${
-                    sortBy === "name" ? "bg-accent/80" : "bg-accent/30"
-                  }`}
-                >
-                  שם {sortBy === "name" && (
-                    <SortAsc className={`w-3 h-3 mr-1 ${sortDirection === "desc" && "transform rotate-180"}`} />
-                  )}
-                </button>
-                <button
-                  onClick={() => handleSort("status")}
-                  className={`px-3 py-1.5 text-xs font-medium flex items-center ${
-                    sortBy === "status" ? "bg-accent/80" : "bg-accent/30"
-                  }`}
-                >
-                  סטטוס {sortBy === "status" && (
-                    <SortAsc className={`w-3 h-3 mr-1 ${sortDirection === "desc" && "transform rotate-180"}`} />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-up">
+          <h2 className="font-display text-lg font-medium mb-6">רשימת משימות</h2>
           
-          {sortedAndFilteredAssignments.length === 0 ? (
+          {filteredAssignments.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               לא נמצאו משימות התואמות את החיפוש
             </div>
           ) : (
             <div className="space-y-4">
-              {sortedAndFilteredAssignments.map((assignment) => (
-                <AssignmentItem 
-                  key={assignment.id}
-                  assignment={assignment}
+              {filteredAssignments.map((assignment) => (
+                <div 
+                  key={assignment.id} 
+                  className="border rounded-lg p-4 hover:bg-accent/50 transition-colors cursor-pointer"
                   onClick={() => handleOpenDetails(assignment)}
-                />
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      {getStatusIcon(assignment.status)}
+                      <div>
+                        <h3 className="font-medium">{assignment.name}</h3>
+                        <div className="flex gap-4 mt-1">
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Tag className="w-3 h-3" /> {assignment.subject}
+                          </span>
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {assignment.dueDate}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <span 
+                      className={`text-xs px-2 py-1 rounded-full ${getStatusColor(assignment.status)}`}
+                    >
+                      {getStatusText(assignment.status)}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-xs text-muted-foreground">הוקצה ל: {assignment.assignedTo.join(", ")}</span>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -394,8 +336,8 @@ const Assignments = () => {
 
       {/* מודאל להוספת משימה חדשה */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md animate-scale-in">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md animate-fade-up">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl font-medium">הוספת משימה חדשה</h2>
               <button onClick={() => setShowAddModal(false)} className="text-muted-foreground hover:text-foreground">
@@ -557,8 +499,8 @@ const Assignments = () => {
       
       {/* מודאל לפרטי משימה */}
       {showDetailsModal && selectedAssignment && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl animate-scale-in">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl animate-fade-up">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl font-medium">פרטי משימה</h2>
               <button onClick={() => setShowDetailsModal(false)} className="text-muted-foreground hover:text-foreground">
