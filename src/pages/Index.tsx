@@ -7,7 +7,7 @@ import { SyncIndicator } from "@/components/SyncIndicator";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppVersionIndicator } from "@/components/AppVersionIndicator";
 import { QuickHelpButton } from "@/components/QuickHelpButton";
-import { Cog, ClipboardList, LayoutDashboard, Search, Plus, X, Gift, Trophy, Crown, Award, Star, Filter, Bell, Zap, BookOpen, GraduationCap, CheckCircle, Calendar, User, ArrowUpRight, UserPlus, Clock, Download, HelpCircle, Settings } from "lucide-react";
+import { Cog, ClipboardList, LayoutDashboard, Search, Plus, X, Gift, Trophy, Crown, Award, Star, Filter, Bell, Zap, BookOpen, GraduationCap, CheckCircle, Calendar, User, ArrowUpRight, UserPlus, Clock, Download, HelpCircle, Settings, Lightbulb } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 // שימור נתוני סטטיסטיקה שבועית לצורך השוואה
@@ -1203,4 +1203,78 @@ const Index = () => {
                 <p className="text-lg text-muted-foreground">לא נמצאו תלמידים מתאימים לחיפוש</p>
                 <button
                   onClick={handleClearFilters}
-                  className="mt-4 px-4 py-2 
+                  className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  הצג את כל התלמידים
+                </button>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/add-student')}
+            className="flex flex-col items-center justify-center gap-2 bg-white rounded-xl p-6 border-2 border-dashed border-gray-300 hover:border-primary hover:bg-accent/20 transition-all cursor-pointer h-[260px]"
+          >
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+              <Plus className="w-8 h-8 text-gray-400" />
+            </div>
+            <span className="text-lg font-medium">הוסף תלמיד חדש</span>
+            <p className="text-sm text-gray-500 text-center max-w-[200px]">
+              הוסף פרטי תלמיד חדש למערכת המעקב והתגמולים
+            </p>
+          </button>
+        </div>
+
+        {/* Charts section */}
+        <div 
+          className={`transition-opacity duration-700 ease-in-out ${visibleCharts ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-6">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              ניתוח ביצועי תלמידים
+            </h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-medium mb-3 text-lg">התקדמות לפי חודשים</h3>
+                <div className="h-[300px]">
+                  <PerformanceChart />
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="font-medium mb-3 text-lg">התפלגות מקצועות לימוד</h3>
+                <div className="h-[300px] flex items-center justify-center">
+                  {/* This is a placeholder for a future subject distribution chart */}
+                  <div className="text-center text-muted-foreground">
+                    <div className="w-32 h-32 mx-auto rounded-full border-8 border-t-primary border-r-blue-400 border-b-orange-400 border-l-green-400 animate-spin"></div>
+                    <p className="mt-4">נתונים מתעדכנים...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* הוספת CSS לאנימציות */}
+      <style>
+        {`
+        @keyframes spin-wheel {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(1080deg); }
+        }
+        
+        .animate-spin-wheel {
+          animation: spin-wheel 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        `}
+      </style>
+      
+      {/* הוספת כפתור עזרה מהירה */}
+      <QuickHelpButton />
+    </div>
+  );
+};
+
+export default Index;
