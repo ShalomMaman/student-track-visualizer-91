@@ -27,43 +27,61 @@ export function SyncIndicator() {
       setSyncState("syncing");
       
       // סימולציה של סנכרון מוצלח אחרי 1.5 שניות
-      setTimeout(() => {
+      const syncTimeout = setTimeout(() => {
         setSyncState("synced");
         toast({
           title: "הנתונים סונכרנו בהצלחה",
           description: "כל השינויים נשמרו בהצלחה",
         });
       }, 1500);
+      
+      return syncTimeout; // החזרת ה-timeout ID כדי שנוכל לנקות אותו אם צריך
     };
     
-    // בדיקה ראשונית
-    checkSyncStatus();
+    // בדיקה ראשונית - נחכה קצת לפני הבדיקה הראשונית
+    const initialCheckTimeout = setTimeout(() => {
+      const syncTimeout = checkSyncStatus();
+      return () => {
+        if (syncTimeout) clearTimeout(syncTimeout);
+      };
+    }, 2000);
     
     // סנכרון אוטומטי כל 30 שניות (במערכת אמיתית נוכל לשנות את התזמון)
     const intervalId = setInterval(() => {
-      checkSyncStatus();
+      const syncTimeout = checkSyncStatus();
+      return () => {
+        if (syncTimeout) clearTimeout(syncTimeout);
+      };
     }, 30000);
     
-    // בדיקה בעת שינוי מצב התחברות
-    window.addEventListener("online", () => {
+    // טיפול באירועי חיבור/ניתוק מהרשת
+    const handleOnline = () => {
       if (syncState === "offline") {
-        checkSyncStatus();
+        const syncTimeout = checkSyncStatus();
+        return () => {
+          if (syncTimeout) clearTimeout(syncTimeout);
+        };
       }
-    });
+    };
     
-    window.addEventListener("offline", () => {
+    const handleOffline = () => {
       setSyncState("offline");
       toast({
         variant: "destructive",
         title: "אין חיבור לאינטרנט",
         description: "הנתונים ישמרו מקומית ויסונכרנו כשהחיבור יחזור",
       });
-    });
+    };
     
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    
+    // ניקוי משאבים בעת הסרת הקומפוננט
     return () => {
+      clearTimeout(initialCheckTimeout);
       clearInterval(intervalId);
-      window.removeEventListener("online", checkSyncStatus);
-      window.removeEventListener("offline", checkSyncStatus);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, [syncState, toast]);
 
@@ -86,6 +104,7 @@ export function SyncIndicator() {
     <div 
       className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent/50 p-2 rounded-lg transition-colors"
       onClick={handleManualSync}
+      title={syncState === "syncing" ? "מסנכרן..." : "לחץ לסנכרון ידני"}
     >
       {syncState === "synced" && (
         <>
