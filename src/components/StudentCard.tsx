@@ -1,6 +1,6 @@
 
-import { GraduationCap, ChartBar, Book } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { ArrowLeft } from "lucide-react";
 
 interface StudentCardProps {
   id: number;
@@ -8,51 +8,52 @@ interface StudentCardProps {
   grade: string;
   progress: number;
   subjects: string[];
+  onClick?: () => void;
 }
 
-export const StudentCard = ({ id, name, grade, progress, subjects }: StudentCardProps) => {
-  const navigate = useNavigate();
-  
-  const handleClick = () => {
-    navigate(`/student/${id}`);
+export const StudentCard = ({ id, name, grade, progress, subjects, onClick }: StudentCardProps) => {
+  // Determine progress color based on value
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return "bg-green-500";
+    if (progress >= 60) return "bg-yellow-500";
+    return "bg-red-500";
   };
-  
+
   return (
     <div 
-      className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-up cursor-pointer"
-      onClick={handleClick}
+      className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer animate-fade-up"
+      onClick={onClick}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-full">
-            <GraduationCap className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-display font-medium text-lg">{name}</h3>
-            <p className="text-sm text-muted-foreground">{grade}</p>
-          </div>
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <h3 className="font-display text-xl font-medium">{name}</h3>
+          <p className="text-sm text-muted-foreground">{grade}</p>
+        </div>
+        <div className="bg-accent rounded-full p-2">
+          <ArrowLeft className="w-4 h-4" />
         </div>
       </div>
       
-      <div className="space-y-4">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">התקדמות כללית</span>
-            <span className="text-sm text-primary">{progress}%</span>
-          </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+      <div className="mt-4">
+        <div className="flex justify-between items-center text-sm mb-1">
+          <span>התקדמות</span>
+          <span className="font-semibold">{progress}%</span>
         </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {subjects.map((subject) => (
+        <div className="w-full h-2 bg-accent rounded-full overflow-hidden">
+          <div 
+            className={`h-full ${getProgressColor(progress)} transition-all duration-500 ease-in-out`} 
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <p className="text-sm text-muted-foreground mb-2">מקצועות:</p>
+        <div className="flex flex-wrap gap-1">
+          {subjects.map((subject, index) => (
             <span 
-              key={subject}
-              className="px-2 py-1 bg-accent text-accent-foreground rounded-md text-xs"
+              key={index} 
+              className="text-xs bg-accent px-2 py-1 rounded-full"
             >
               {subject}
             </span>

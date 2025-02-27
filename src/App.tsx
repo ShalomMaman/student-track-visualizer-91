@@ -4,6 +4,7 @@ import Index from "./pages/Index";
 import StudentProfile from "./pages/StudentProfile";
 import Assignments from "./pages/Assignments";
 import Settings from "./pages/Settings";
+import AddStudent from "./pages/AddStudent";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="/student/:id" element={<StudentProfile />} />
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/add-student" element={<AddStudent />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
