@@ -7,7 +7,7 @@ import { SyncIndicator } from "@/components/SyncIndicator";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppVersionIndicator } from "@/components/AppVersionIndicator";
 import { QuickHelpButton } from "@/components/QuickHelpButton";
-import { Cog, ClipboardList, LayoutDashboard, Search, Plus, X, Gift, Trophy, Crown, Award, Star, Filter, Bell, Zap, BookOpen, GraduationCap, CheckCircle, Calendar, User, ArrowUpRight, UserPlus, Clock, Download, HelpCircle, Settings } from "lucide-react";
+import { Cog, ClipboardList, LayoutDashboard, Search, Plus, X, Gift, Trophy, Crown, Award, Star, Filter, Bell, Zap, BookOpen, GraduationCap, CheckCircle, Calendar, User, ArrowUpRight, UserPlus, Clock, Download, HelpCircle, Settings, Lightbulb } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 // שימור נתוני סטטיסטיקה שבועית לצורך השוואה
@@ -323,6 +323,17 @@ const Index = () => {
     setFilterGrade("");
   };
 
+  // פונקציה להצגת מערכת הפרסים
+  const toggleRewardsPreview = () => {
+    setShowRewardsPreview(!showRewardsPreview);
+    
+    // אם סוגרים את אזור הפרסים, נוודא שגלגל המזל מאופס
+    if (showRewardsPreview) {
+      setSpinWheel(false);
+      setWheelResult(null);
+    }
+  };
+
   // פונקציה לסובב את גלגל המזל
   const spinLuckyWheel = () => {
     if (spinWheel) return;
@@ -543,7 +554,8 @@ const Index = () => {
                 הגדרות
               </button>
               <button 
-                onClick={() => setShowRewardsPreview(!showRewardsPreview)}
+                type="button"
+                onClick={toggleRewardsPreview}
                 className="flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-yellow-500 to-amber-600 text-white transition-colors shadow-sm hover:shadow-md"
               >
                 <Gift className="w-5 h-5" />
@@ -875,7 +887,8 @@ const Index = () => {
               </div>
               
               <button 
-                onClick={() => setShowRewardsPreview(true)}
+                type="button"
+                onClick={toggleRewardsPreview}
                 className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5"
               >
                 <Gift className="w-4 h-4" />
@@ -916,7 +929,10 @@ const Index = () => {
                 ))}
               </div>
               
-              <button className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5">
+              <button 
+                type="button"
+                className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5"
+              >
                 <Lightbulb className="w-4 h-4" />
                 כל הטיפים הפדגוגיים
               </button>
@@ -933,7 +949,8 @@ const Index = () => {
                 <span>מערכת הפרסים והאווטרים</span>
               </h2>
               <button
-                onClick={() => setShowRewardsPreview(false)}
+                type="button"
+                onClick={toggleRewardsPreview}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X className="w-5 h-5" />
@@ -983,6 +1000,7 @@ const Index = () => {
                     </div>
                     <div className="text-center mt-2">
                       <button
+                        type="button"
                         onClick={() => navigate('/student/1')}
                         className="text-xs text-primary hover:underline"
                       >
@@ -1002,7 +1020,11 @@ const Index = () => {
                 
                 <div className="space-y-3">
                   {rewardsSystem.nextRewards.map((reward) => (
-                    <div key={reward.id} className="border rounded-lg p-3 hover:bg-accent/20 transition-colors cursor-pointer" onClick={() => navigate('/student/1')}>
+                    <div 
+                      key={reward.id} 
+                      className="border rounded-lg p-3 hover:bg-accent/20 transition-colors cursor-pointer" 
+                      onClick={() => navigate('/student/1')}
+                    >
                       <div className="flex items-center gap-3">
                         <img 
                           src={reward.image} 
@@ -1036,6 +1058,7 @@ const Index = () => {
                 
                 <div className="mt-4 text-center">
                   <button
+                    type="button"
                     onClick={() => navigate('/student/1')}
                     className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors"
                   >
@@ -1103,6 +1126,7 @@ const Index = () => {
                 </div>
                 
                 <button 
+                  type="button"
                   onClick={spinLuckyWheel}
                   disabled={spinWheel}
                   className={`mt-4 px-6 py-2 rounded-full font-medium text-white transition-colors ${
@@ -1122,6 +1146,7 @@ const Index = () => {
             
             <div className="mt-6 flex justify-center">
               <button
+                type="button"
                 onClick={() => navigate('/student/1')}
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2"
               >
@@ -1146,6 +1171,7 @@ const Index = () => {
                 {uniqueGrades.map(grade => (
                   <button
                     key={grade}
+                    type="button"
                     onClick={() => setFilterGrade(filterGrade === grade ? "" : grade)}
                     className={`px-3 py-1 text-sm rounded-full transition-colors ${
                       filterGrade === grade 
@@ -1158,6 +1184,7 @@ const Index = () => {
                 ))}
                 {(filterGrade || searchQuery) && (
                   <button
+                    type="button"
                     onClick={handleClearFilters}
                     className="px-3 py-1 text-sm rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors flex items-center gap-1"
                   >
@@ -1171,13 +1198,17 @@ const Index = () => {
           
           <div className="flex items-center justify-end mb-2">
             <button 
+              type="button"
               onClick={handleAddStudent}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-primary hover:bg-primary/5 transition-colors"
             >
               <UserPlus className="w-4 h-4" />
               הוסף תלמיד חדש
             </button>
-            <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <button 
+              type="button"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
               <Filter className="w-4 h-4" />
               סינון מתקדם
             </button>
@@ -1202,5 +1233,81 @@ const Index = () => {
                 </div>
                 <p className="text-lg text-muted-foreground">לא נמצאו תלמידים מתאימים לחיפוש</p>
                 <button
+                  type="button"
                   onClick={handleClearFilters}
-                  className="mt-4 px-4 py-2 
+                  className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  הצג את כל התלמידים
+                </button>
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleAddStudent}
+            className="flex flex-col items-center justify-center gap-2 bg-white rounded-xl p-6 border-2 border-dashed border-gray-300 hover:border-primary hover:bg-accent/20 transition-all cursor-pointer h-[260px]"
+          >
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+              <Plus className="w-8 h-8 text-gray-400" />
+            </div>
+            <span className="text-lg font-medium">הוסף תלמיד חדש</span>
+            <p className="text-sm text-gray-500 text-center max-w-[200px]">
+              הוסף פרטי תלמיד חדש למערכת המעקב והתגמולים
+            </p>
+          </button>
+        </div>
+
+        {/* Charts section */}
+        <div 
+          className={`transition-opacity duration-700 ease-in-out ${visibleCharts ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-6">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              ניתוח ביצועי תלמידים
+            </h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-medium mb-3 text-lg">התקדמות לפי חודשים</h3>
+                <div className="h-[300px]">
+                  <PerformanceChart />
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="font-medium mb-3 text-lg">התפלגות מקצועות לימוד</h3>
+                <div className="h-[300px] flex items-center justify-center">
+                  {/* This is a placeholder for a future subject distribution chart */}
+                  <div className="text-center text-muted-foreground">
+                    <div className="w-32 h-32 mx-auto rounded-full border-8 border-t-primary border-r-blue-400 border-b-orange-400 border-l-green-400 animate-spin"></div>
+                    <p className="mt-4">נתונים מתעדכנים...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* הוספת CSS לאנימציות */}
+      <style>
+        {`
+        @keyframes spin-wheel {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(1080deg); }
+        }
+        
+        .animate-spin-wheel {
+          animation: spin-wheel 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        `}
+      </style>
+      
+      {/* הוספת כפתור עזרה מהירה */}
+      <QuickHelpButton />
+    </div>
+  );
+};
+
+export default Index;
