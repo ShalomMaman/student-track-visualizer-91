@@ -1,5 +1,5 @@
 
-import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, MessageCircle, GraduationCap, ListChecks, Trophy, Plus, Award, Gift, Star, Zap, Medal, Crown, Lock, UserRound, Edit, Save, Trash2, AlertTriangle, Check, X } from "lucide-react";
+import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, MessageCircle, GraduationCap, ListChecks, Trophy, Plus, Award, Gift, Star, Zap, Medal, Crown, Lock, UserRound, Edit, Save, Trash2, AlertTriangle, Check, X, Filter, Info, Clock, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { StudentPerformanceChart } from "@/components/StudentPerformanceChart";
@@ -57,7 +57,7 @@ const StudentProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const studentId = id ? parseInt(id) : 1;
-  const [selectedTab, setSelectedTab] = useState<"profile" | "avatar" | "rewards">("profile");
+  const [selectedTab, setSelectedTab] = useState<"profile" | "avatar" | "rewards">("rewards");
   const [activeAvatarCategory, setActiveAvatarCategory] = useState<"all" | "hat" | "outfit" | "accessory">("all");
   const [activeRewardsCategory, setActiveRewardsCategory] = useState<"all" | "real" | "avatar" | "certificate">("all");
   const [isTeacherMode, setIsTeacherMode] = useState(true); // במציאות יבוסס על הרשאות
@@ -66,6 +66,7 @@ const StudentProfile = () => {
   const [rewardToDelete, setRewardToDelete] = useState<number | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showRewardDetails, setShowRewardDetails] = useState<number | null>(null);
 
   // כאן בעתיד נוכל לטעון נתונים אמיתיים של תלמיד לפי המזהה
   const student = {
@@ -395,6 +396,76 @@ const StudentProfile = () => {
     console.log(`בחרת פריט אווטר מספר ${itemId}`);
   };
 
+  // פונקציה להצגת אייקון לפי סוג הפרס
+  const getRewardTypeIcon = (type: Reward["type"]) => {
+    switch (type) {
+      case "avatar":
+        return <Crown className="w-4 h-4" />;
+      case "real":
+        return <Gift className="w-4 h-4" />;
+      case "certificate":
+        return <Award className="w-4 h-4" />;
+      default:
+        return <Gift className="w-4 h-4" />;
+    }
+  };
+
+  // פונקציה להצגת טקסט לפי סוג הפרס
+  const getRewardTypeText = (type: Reward["type"]) => {
+    switch (type) {
+      case "avatar":
+        return "פריט אווטר";
+      case "real":
+        return "פרס פיזי";
+      case "certificate":
+        return "תעודה";
+      default:
+        return "";
+    }
+  };
+
+  // פונקציה להצגת צבע תגית לפי סוג הפרס
+  const getRewardTypeColor = (type: Reward["type"]) => {
+    switch (type) {
+      case "avatar":
+        return "bg-purple-100 text-purple-800";
+      case "real":
+        return "bg-blue-100 text-blue-800";
+      case "certificate":
+        return "bg-amber-100 text-amber-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // פונקציה להצגת סטטוס פרס באופן יותר ידידותי
+  const getRewardStatus = (reward: Reward) => {
+    if (!reward.acquired) {
+      return {
+        text: "בתהליך השגה",
+        color: "text-blue-600",
+        bgColor: "bg-blue-50",
+        icon: <Clock className="w-4 h-4" />
+      };
+    }
+    
+    if (reward.type === "real" && !reward.isDelivered) {
+      return {
+        text: "ממתין למסירה",
+        color: "text-amber-600",
+        bgColor: "bg-amber-50",
+        icon: <AlertTriangle className="w-4 h-4" />
+      };
+    }
+    
+    return {
+      text: "הושג ונמסר",
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+      icon: <Check className="w-4 h-4" />
+    };
+  };
+
   return (
     <div className="min-h-screen bg-[#fafafa] p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -585,380 +656,462 @@ const StudentProfile = () => {
         
         {/* תצוגת מערכת הפרסים משופרת */}
         {selectedTab === "rewards" && (
-          <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-up">
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-2xl font-medium flex items-center gap-2">
-                  <Award className="w-6 h-6 text-yellow-500" />
-                  מערכת הפרסים
-                </h2>
+          <div className="animate-fade-up">
+            {/* כותרת ומידע כללי */}
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <div className="mb-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <h2 className="font-display text-2xl font-medium flex items-center gap-2">
+                    <Trophy className="w-6 h-6 text-yellow-500" />
+                    מערכת הפרסים של {student.name}
+                  </h2>
+                  
+                  {isTeacherMode && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={addNewReward}
+                        className="px-3 py-1.5 rounded-md bg-primary text-white text-sm flex items-center gap-1 hover:bg-primary/90 transition-colors shadow-sm"
+                      >
+                        <Plus className="w-4 h-4" />
+                        הוסף פרס
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-muted-foreground mt-2">
+                  צבירת נקודות מאפשרת לתלמיד לקבל פרסים! השלמת משימות, מבחנים ושיעורי בית מזכים בנקודות.
+                </p>
                 
                 {isTeacherMode && (
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={addNewReward}
-                      className="px-3 py-1.5 rounded-md bg-primary text-white text-sm flex items-center gap-1 hover:bg-primary/90 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      הוסף פרס
-                    </button>
+                  <div className="mt-3 py-2 px-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800 flex items-center gap-2">
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>אתה במצב מורה - באפשרותך לערוך פרסים, להוסיף הערות ולסמן פרסים שנמסרו</span>
                   </div>
                 )}
               </div>
-              
-              <p className="text-muted-foreground mt-2">
-                צבירת נקודות מאפשרת לך לקבל פרסים! השלם משימות, ענה על שאלות נכון וצבור נקודות.
-              </p>
-              
-              {isTeacherMode && (
-                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  אתה במצב מורה - באפשרותך לערוך פרסים, להוסיף הערות ולסמן פרסים כנמסרו
-                </div>
-              )}
             </div>
-            
-            {/* מידע על הנקודות וקטגוריות */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-4 md:p-6 flex-1 md:max-w-xs">
-                <div className="flex flex-col items-center">
-                  <div className="bg-primary/10 rounded-full w-20 h-20 flex items-center justify-center mb-4">
-                    <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center relative">
-                      <Star className="w-10 h-10 text-yellow-500 fill-yellow-500" />
-                      <div className="absolute -top-1 -right-1 bg-primary rounded-full w-6 h-6 flex items-center justify-center text-white text-xs font-bold">
-                        {rewardsSystem.level}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* מידע על הנקודות */}
+              <div>
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <div className="p-6 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+                    <div className="flex flex-col items-center">
+                      <div className="bg-white rounded-full w-24 h-24 flex items-center justify-center mb-4 shadow-sm relative animate-pulse-ring">
+                        <Star className="w-12 h-12 text-yellow-500 fill-yellow-400" />
+                        <div className="absolute -top-1 -right-1 bg-primary rounded-full w-8 h-8 flex items-center justify-center text-white text-sm font-bold">
+                          {rewardsSystem.level}
+                        </div>
+                      </div>
+                      
+                      <h3 className="font-medium text-xl">הנקודות של {student.name}</h3>
+                      <p className="text-4xl font-bold text-primary mt-2">{rewardsSystem.points}</p>
+                      
+                      <div className="w-full mt-6">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>רמה {rewardsSystem.level}</span>
+                          <span>רמה {rewardsSystem.level + 1}</span>
+                        </div>
+                        <div className="h-2.5 w-full bg-gray-200 rounded-full">
+                          <div className="bg-primary h-2.5 rounded-full relative overflow-hidden" style={{ width: "65%" }}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                          </div>
+                        </div>
+                        <p className="text-center text-sm text-primary font-medium mt-2">
+                          עוד 180 נקודות לרמה הבאה
+                        </p>
                       </div>
                     </div>
                   </div>
                   
-                  <h3 className="font-medium text-lg">הנקודות של {student.name}</h3>
-                  <p className="text-3xl font-bold text-primary">{rewardsSystem.points}</p>
-                  
-                  <div className="w-full mt-4">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>רמה {rewardsSystem.level}</span>
-                      <span>רמה {rewardsSystem.level + 1}</span>
-                    </div>
-                    <div className="h-2 w-full bg-gray-200 rounded-full">
-                      <div className="bg-primary h-2 rounded-full" style={{ width: "65%" }}></div>
-                    </div>
-                    <p className="text-center text-xs text-muted-foreground mt-2">
-                      עוד 180 נקודות לרמה הבאה
-                    </p>
-                  </div>
-                  
-                  <div className="w-full mt-4 p-3 bg-white rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-yellow-500" />
-                      <span className="font-medium">רצף למידה</span>
-                    </div>
-                    <div className="flex justify-between mt-2">
-                      {[1, 2, 3, 4, 5, 6, 7].map((day, index) => (
-                        <div 
-                          key={day}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                            index < rewardsSystem.streakDays 
-                              ? "bg-primary text-white" 
-                              : "bg-gray-100 text-gray-400"
-                          }`}
-                        >
-                          {day}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-center text-xs text-muted-foreground mt-2">
-                      רצף של {rewardsSystem.streakDays} ימים
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* קטגוריות פרסים */}
-              <div className="flex-1">
-                <div className="bg-white border rounded-lg p-2 mb-4">
-                  <div className="flex gap-2 flex-wrap">
-                    <button 
-                      onClick={() => setActiveRewardsCategory("all")}
-                      className={`flex-1 px-3 py-2 rounded-md text-sm ${activeRewardsCategory === "all" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
-                    >
-                      כל הפרסים
-                    </button>
-                    <button 
-                      onClick={() => setActiveRewardsCategory("real")}
-                      className={`flex-1 px-3 py-2 rounded-md text-sm ${activeRewardsCategory === "real" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
-                    >
-                      פרסים פיזיים
-                    </button>
-                    <button 
-                      onClick={() => setActiveRewardsCategory("avatar")}
-                      className={`flex-1 px-3 py-2 rounded-md text-sm ${activeRewardsCategory === "avatar" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
-                    >
-                      פריטי אווטר
-                    </button>
-                    <button 
-                      onClick={() => setActiveRewardsCategory("certificate")}
-                      className={`flex-1 px-3 py-2 rounded-md text-sm ${activeRewardsCategory === "certificate" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
-                    >
-                      תעודות
-                    </button>
-                  </div>
-                </div>
-                
-                {/* סטטיסטיקות של פרסים */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
-                    <div className="text-2xl font-bold text-violet-600">
-                      {rewards.filter(r => r.acquired).length}
-                    </div>
-                    <div className="text-xs text-violet-800">פרסים שהושגו</div>
-                  </div>
-                  <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                    <div className="text-2xl font-bold text-emerald-600">
-                      {rewards.filter(r => r.acquired && r.isDelivered).length}
-                    </div>
-                    <div className="text-xs text-emerald-800">פרסים שנמסרו</div>
-                  </div>
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
-                    <div className="text-2xl font-bold text-amber-600">
-                      {rewards.filter(r => r.acquired && !r.isDelivered && r.type === "real").length}
-                    </div>
-                    <div className="text-xs text-amber-800">ממתינים למסירה</div>
-                  </div>
-                  <div className="p-3 bg-sky-50 rounded-lg border border-sky-100">
-                    <div className="text-2xl font-bold text-sky-600">
-                      {rewards.filter(r => !r.acquired).length}
-                    </div>
-                    <div className="text-xs text-sky-800">פרסים עתידיים</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* רשימת הפרסים */}
-            <div className="mt-6">
-              <h3 className="font-medium text-lg mb-4 flex items-center gap-2">
-                <Gift className="w-5 h-5 text-primary" />
-                רשימת הפרסים
-              </h3>
-              
-              <div className="grid grid-cols-1 gap-4">
-                {filteredRewards.map(reward => (
-                  <div 
-                    key={reward.id} 
-                    className={`border rounded-lg ${
-                      editingRewardId === reward.id ? "border-primary" : "hover:border-primary/50"
-                    } transition-colors overflow-hidden`}
-                  >
-                    {editingRewardId === reward.id ? (
-                      <div className="p-4 bg-blue-50">
-                        <div className="flex justify-between mb-4">
-                          <h4 className="font-medium">עריכת פרס</h4>
-                          <button 
-                            onClick={() => setEditingRewardId(null)}
-                            className="text-gray-500 hover:text-gray-700"
+                  <div className="p-4 border-t">
+                    <div className="mb-3">
+                      <h4 className="font-medium text-sm flex items-center gap-1 mb-2">
+                        <Zap className="w-4 h-4 text-yellow-500" />
+                        רצף למידה
+                      </h4>
+                      <div className="flex justify-between">
+                        {[1, 2, 3, 4, 5, 6, 7].map((day, index) => (
+                          <div 
+                            key={day}
+                            className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                              index < rewardsSystem.streakDays 
+                                ? "bg-primary text-white" 
+                                : "bg-gray-100 text-gray-400"
+                            }`}
                           >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <div>
-                              <label className="block text-sm font-medium mb-1">שם הפרס</label>
-                              <input 
-                                type="text" 
-                                value={editedReward.title}
-                                onChange={(e) => setEditedReward({...editedReward, title: e.target.value})}
-                                className="w-full px-3 py-2 border rounded-md"
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium mb-1">נקודות נדרשות</label>
-                              <input 
-                                type="number" 
-                                value={editedReward.points}
-                                onChange={(e) => setEditedReward({...editedReward, points: parseInt(e.target.value) || 0})}
-                                className="w-full px-3 py-2 border rounded-md"
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium mb-1">מיקום פיזי של הפרס</label>
-                              <input 
-                                type="text" 
-                                value={editedReward.location}
-                                onChange={(e) => setEditedReward({...editedReward, location: e.target.value})}
-                                className="w-full px-3 py-2 border rounded-md"
-                                placeholder="לדוגמה: ארון כיתה, מדף עליון"
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3">
-                            <div>
-                              <label className="block text-sm font-medium mb-1">הערות מורה</label>
-                              <textarea 
-                                value={editedReward.teacherNotes}
-                                onChange={(e) => setEditedReward({...editedReward, teacherNotes: e.target.value})}
-                                className="w-full px-3 py-2 border rounded-md h-32 resize-none"
-                                placeholder="הערות לגבי הפרס, העדפות של התלמיד/ה וכו'"
-                              />
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <input 
-                                type="checkbox" 
-                                id="isDelivered"
-                                checked={editedReward.isDelivered}
-                                onChange={(e) => setEditedReward({...editedReward, isDelivered: e.target.checked})}
-                                className="w-4 h-4"
-                              />
-                              <label htmlFor="isDelivered" className="text-sm">הפרס נמסר לתלמיד/ה</label>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex justify-end gap-2 mt-4">
-                          <button 
-                            onClick={() => setEditingRewardId(null)}
-                            className="px-4 py-2 border rounded-md text-sm"
-                          >
-                            ביטול
-                          </button>
-                          <button 
-                            onClick={saveRewardChanges}
-                            className="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors"
-                          >
-                            שמור שינויים
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col md:flex-row md:items-center">
-                        <div className="flex items-center p-4 flex-1">
-                          <div className="relative min-w-16 min-h-16 flex items-center justify-center">
-                            <img 
-                              src={reward.image} 
-                              alt={reward.title}
-                              className={`w-16 h-16 object-contain ${reward.acquired ? "" : "opacity-75"}`}
-                            />
-                            {reward.acquired && reward.isDelivered && (
-                              <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
-                                <div className="w-3 h-3 text-white">✓</div>
-                              </div>
+                            {day}
+                            {index < rewardsSystem.streakDays && (
+                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full"></span>
                             )}
                           </div>
-                          
-                          <div className="flex-1 ml-4">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-medium">{reward.title}</h4>
-                                <div className="flex items-center gap-1 mt-1">
-                                  <span className="text-xs text-muted-foreground">
-                                    {reward.type === "avatar" && "פריט אווטר"}
-                                    {reward.type === "real" && "פרס פיזי"}
-                                    {reward.type === "certificate" && "תעודה"}
+                        ))}
+                      </div>
+                      <p className="text-center text-xs text-muted-foreground mt-2">
+                        רצף של {rewardsSystem.streakDays} ימים רצופים
+                      </p>
+                    </div>
+                    
+                    {/* סטטיסטיקות של פרסים */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-1">
+                        <Trophy className="w-4 h-4 text-primary" />
+                        סיכום פרסים
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
+                          <div className="text-lg font-bold text-violet-600">
+                            {rewards.filter(r => r.acquired).length}
+                          </div>
+                          <div className="text-xs text-violet-800">פרסים שהושגו</div>
+                        </div>
+                        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                          <div className="text-lg font-bold text-emerald-600">
+                            {rewards.filter(r => r.acquired && r.isDelivered).length}
+                          </div>
+                          <div className="text-xs text-emerald-800">נמסרו</div>
+                        </div>
+                        <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
+                          <div className="text-lg font-bold text-amber-600">
+                            {rewards.filter(r => r.acquired && !r.isDelivered && r.type === "real").length}
+                          </div>
+                          <div className="text-xs text-amber-800">ממתינים למסירה</div>
+                        </div>
+                        <div className="p-3 bg-sky-50 rounded-lg border border-sky-100">
+                          <div className="text-lg font-bold text-sky-600">
+                            {rewards.filter(r => !r.acquired).length}
+                          </div>
+                          <div className="text-xs text-sky-800">בתהליך השגה</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* רשימת הפרסים */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl p-6 shadow-sm">
+                  <div className="mb-4 flex flex-wrap gap-3 items-center justify-between">
+                    <h3 className="font-medium text-lg flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-primary" />
+                      רשימת הפרסים
+                    </h3>
+                    
+                    {/* קטגוריות פרסים */}
+                    <div className="flex flex-wrap gap-1.5">
+                      <button 
+                        onClick={() => setActiveRewardsCategory("all")}
+                        className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 ${
+                          activeRewardsCategory === "all" 
+                            ? "bg-gray-800 text-white" 
+                            : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        }`}
+                      >
+                        <Filter className="w-3.5 h-3.5" />
+                        הכל
+                      </button>
+                      <button 
+                        onClick={() => setActiveRewardsCategory("real")}
+                        className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 ${
+                          activeRewardsCategory === "real" 
+                            ? "bg-blue-600 text-white" 
+                            : "bg-blue-50 hover:bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        <Gift className="w-3.5 h-3.5" />
+                        פרסים פיזיים
+                      </button>
+                      <button 
+                        onClick={() => setActiveRewardsCategory("avatar")}
+                        className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 ${
+                          activeRewardsCategory === "avatar" 
+                            ? "bg-purple-600 text-white" 
+                            : "bg-purple-50 hover:bg-purple-100 text-purple-700"
+                        }`}
+                      >
+                        <Crown className="w-3.5 h-3.5" />
+                        פריטי אווטר
+                      </button>
+                      <button 
+                        onClick={() => setActiveRewardsCategory("certificate")}
+                        className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 ${
+                          activeRewardsCategory === "certificate" 
+                            ? "bg-amber-600 text-white" 
+                            : "bg-amber-50 hover:bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        <Award className="w-3.5 h-3.5" />
+                        תעודות
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* רשימת הפרסים - תצוגה משופרת */}
+                  <div className="space-y-3">
+                    {filteredRewards.map(reward => (
+                      <div 
+                        key={reward.id} 
+                        className={`border rounded-lg ${
+                          editingRewardId === reward.id 
+                            ? "border-primary ring-1 ring-primary/10" 
+                            : "hover:border-primary/40 hover:shadow-sm"
+                        } transition-all overflow-hidden group`}
+                      >
+                        {editingRewardId === reward.id ? (
+                          <div className="p-4 bg-blue-50">
+                            <div className="flex justify-between mb-4">
+                              <h4 className="font-medium flex items-center gap-1.5">
+                                <Edit className="w-4 h-4 text-primary" />
+                                עריכת פרס
+                              </h4>
+                              <button 
+                                onClick={() => setEditingRewardId(null)}
+                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">שם הפרס</label>
+                                  <input 
+                                    type="text" 
+                                    value={editedReward.title}
+                                    onChange={(e) => setEditedReward({...editedReward, title: e.target.value})}
+                                    className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-primary/20 focus:border-primary"
+                                  />
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">נקודות נדרשות</label>
+                                  <input 
+                                    type="number" 
+                                    value={editedReward.points}
+                                    onChange={(e) => setEditedReward({...editedReward, points: parseInt(e.target.value) || 0})}
+                                    className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-primary/20 focus:border-primary"
+                                  />
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">מיקום פיזי של הפרס</label>
+                                  <input 
+                                    type="text" 
+                                    value={editedReward.location}
+                                    onChange={(e) => setEditedReward({...editedReward, location: e.target.value})}
+                                    className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-primary/20 focus:border-primary"
+                                    placeholder="לדוגמה: ארון כיתה, מדף עליון"
+                                  />
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">הערות מורה</label>
+                                  <textarea 
+                                    value={editedReward.teacherNotes}
+                                    onChange={(e) => setEditedReward({...editedReward, teacherNotes: e.target.value})}
+                                    className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-primary/20 focus:border-primary h-32 resize-none"
+                                    placeholder="הערות לגבי הפרס, העדפות של התלמיד/ה וכו'"
+                                  />
+                                </div>
+                                
+                                <div className="flex items-center gap-2 mt-2">
+                                  <input 
+                                    type="checkbox" 
+                                    id="isDelivered"
+                                    checked={editedReward.isDelivered}
+                                    onChange={(e) => setEditedReward({...editedReward, isDelivered: e.target.checked})}
+                                    className="w-4 h-4 rounded text-primary focus:ring-primary"
+                                  />
+                                  <label htmlFor="isDelivered" className="text-sm">הפרס נמסר לתלמיד/ה</label>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-end gap-2 mt-4">
+                              <button 
+                                onClick={() => setEditingRewardId(null)}
+                                className="px-4 py-2 border rounded-md text-sm bg-white hover:bg-gray-50"
+                              >
+                                ביטול
+                              </button>
+                              <button 
+                                onClick={saveRewardChanges}
+                                className="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                              >
+                                <Save className="w-4 h-4" />
+                                שמור שינויים
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div 
+                            className="flex flex-col md:flex-row cursor-pointer"
+                            onClick={() => showRewardDetails !== reward.id ? setShowRewardDetails(reward.id) : setShowRewardDetails(null)}
+                          >
+                            {/* המידע העיקרי על הפרס */}
+                            <div className="flex p-4 flex-1 items-start">
+                              <div className="shrink-0 mr-4 relative">
+                                <div className={`w-16 h-16 rounded-lg flex items-center justify-center ${
+                                  reward.acquired 
+                                    ? "bg-green-50 border border-green-100" 
+                                    : "bg-gray-50 border border-gray-100"
+                                }`}>
+                                  <img 
+                                    src={reward.image} 
+                                    alt={reward.title}
+                                    className="w-12 h-12 object-contain"
+                                  />
+                                </div>
+                                {reward.acquired && reward.isDelivered && (
+                                  <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-sm">
+                                    <Check className="w-3.5 h-3.5 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <h4 className="font-medium text-lg leading-tight">{reward.title}</h4>
+                                    <div className="flex items-center flex-wrap gap-2 mt-1">
+                                      <span className={`${getRewardTypeColor(reward.type)} text-xs px-2 py-0.5 rounded-full flex items-center gap-1`}>
+                                        {getRewardTypeIcon(reward.type)}
+                                        {getRewardTypeText(reward.type)}
+                                      </span>
+                                      
+                                      <span className={`${getRewardStatus(reward).bgColor} text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${getRewardStatus(reward).color}`}>
+                                        {getRewardStatus(reward).icon}
+                                        {getRewardStatus(reward).text}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <span className="text-sm bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium shrink-0">
+                                    {reward.points} נקודות
                                   </span>
-                                  {reward.acquired && (
-                                    <span className="text-xs text-green-600">• הושג</span>
-                                  )}
-                                  {reward.acquired && reward.isDelivered && reward.type === "real" && (
-                                    <span className="text-xs text-blue-600">• נמסר</span>
-                                  )}
-                                  {reward.acquired && !reward.isDelivered && reward.type === "real" && (
-                                    <span className="text-xs text-orange-600">• ממתין למסירה</span>
+                                </div>
+                                
+                                <div className="mt-3">
+                                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-2 rounded-full ${
+                                        reward.acquired 
+                                          ? "bg-green-500" 
+                                          : "bg-primary"
+                                      } relative overflow-hidden`}
+                                      style={{ width: `${reward.progress}%` }}  
+                                    >
+                                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                                    </div>
+                                  </div>
+                                  
+                                  {!reward.acquired && (
+                                    <div className="flex justify-between text-xs mt-1 text-gray-600">
+                                      <span>{Math.round(reward.progress / 100 * reward.points)} / {reward.points} נקודות</span>
+                                      <span>חסר {reward.points - Math.round(reward.progress / 100 * reward.points)} נקודות</span>
+                                    </div>
                                   )}
                                 </div>
                               </div>
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full whitespace-nowrap">
-                                {reward.points} נקודות
-                              </span>
                             </div>
                             
-                            {/* תצוגה למורה בלבד - מיקום הפרס והערות */}
-                            {isTeacherMode && reward.type === "real" && (
-                              <div className="mt-2 p-2 bg-gray-50 rounded-md text-xs space-y-1">
-                                {reward.location && (
-                                  <div>
-                                    <span className="font-semibold">מיקום: </span>
-                                    <span>{reward.location}</span>
-                                  </div>
+                            {/* כפתורי פעולות למורה */}
+                            {isTeacherMode && (
+                              <div className={`flex items-center p-4 gap-2 md:border-r md:flex-col bg-gray-50`}>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingRewardId(reward.id);
+                                  }}
+                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                  title="ערוך פרס"
+                                >
+                                  <Edit className="w-5 h-5" />
+                                </button>
+                                
+                                {reward.acquired && !reward.isDelivered && reward.type === "real" && (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      markRewardAsDelivered(reward.id);
+                                    }}
+                                    className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                                    title="סמן כנמסר"
+                                  >
+                                    <Check className="w-5 h-5" />
+                                  </button>
                                 )}
-                                {reward.teacherNotes && (
-                                  <div>
-                                    <span className="font-semibold">הערות: </span>
-                                    <span>{reward.teacherNotes}</span>
-                                  </div>
-                                )}
+                                
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setRewardToDelete(reward.id);
+                                    setShowConfirmModal(true);
+                                  }}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                  title="מחק פרס"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
                               </div>
                             )}
-                            
-                            <div className="mt-2">
-                              <div className="h-1.5 w-full bg-gray-200 rounded-full">
-                                <div 
-                                  className={`h-1.5 rounded-full ${
-                                    reward.acquired 
-                                      ? "bg-green-500" 
-                                      : "bg-primary"
-                                  }`}
-                                  style={{ width: `${reward.progress}%` }}  
-                                ></div>
-                              </div>
+                          </div>
+                        )}
+
+                        {/* מידע נוסף ופרטים על הפרס */}
+                        {showRewardDetails === reward.id && !editingRewardId && (
+                          <div className="border-t p-4 bg-gray-50">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {reward.type === "real" && (
+                                <div className="space-y-2">
+                                  {reward.location && (
+                                    <div className="flex items-start gap-2">
+                                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
+                                      <div>
+                                        <span className="text-sm font-medium">מיקום פיזי:</span>
+                                        <p className="text-sm text-gray-600">{reward.location}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               
-                              {!reward.acquired && (
-                                <div className="flex justify-between text-xs mt-1">
-                                  <span>{Math.round(reward.progress / 100 * reward.points)} נקודות</span>
-                                  <span>חסר {reward.points - Math.round(reward.progress / 100 * reward.points)} נקודות</span>
+                              {isTeacherMode && reward.teacherNotes && (
+                                <div className="space-y-2">
+                                  <div className="flex items-start gap-2">
+                                    <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                                    <div>
+                                      <span className="text-sm font-medium">הערות מורה:</span>
+                                      <p className="text-sm text-gray-600">{reward.teacherNotes}</p>
+                                    </div>
+                                  </div>
                                 </div>
                               )}
                             </div>
                           </div>
-                        </div>
-                        
-                        {/* כפתורי פעולות למורה */}
-                        {isTeacherMode && (
-                          <div className={`flex items-center p-4 gap-2 ${reward.type === "real" ? "bg-gray-50 border-t md:border-t-0 md:border-r md:border-gray-200" : ""}`}>
-                            <button 
-                              onClick={() => setEditingRewardId(reward.id)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                              title="ערוך פרס"
-                            >
-                              <Edit className="w-5 h-5" />
-                            </button>
-                            
-                            {reward.acquired && !reward.isDelivered && reward.type === "real" && (
-                              <button 
-                                onClick={() => markRewardAsDelivered(reward.id)}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                                title="סמן כנמסר"
-                              >
-                                <Check className="w-5 h-5" />
-                              </button>
-                            )}
-                            
-                            <button 
-                              onClick={() => {
-                                setRewardToDelete(reward.id);
-                                setShowConfirmModal(true);
-                              }}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                              title="מחק פרס"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          </div>
                         )}
+                      </div>
+                    ))}
+                    
+                    {filteredRewards.length === 0 && (
+                      <div className="p-8 text-center border rounded-lg bg-gray-50 flex flex-col items-center">
+                        <Trophy className="w-12 h-12 text-gray-300 mb-2" />
+                        <p className="text-muted-foreground">לא נמצאו פרסים בקטגוריה זו</p>
+                        <button 
+                          onClick={addNewReward}
+                          className="mt-4 px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                        >
+                          <Plus className="w-4 h-4" />
+                          הוסף פרס חדש
+                        </button>
                       </div>
                     )}
                   </div>
-                ))}
-                
-                {filteredRewards.length === 0 && (
-                  <div className="p-6 text-center border rounded-lg bg-gray-50">
-                    <p className="text-muted-foreground">לא נמצאו פרסים בקטגוריה זו</p>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -1114,20 +1267,25 @@ const StudentProfile = () => {
       {/* מודל אישור מחיקה */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">מחיקת פרס</h3>
-            <p>האם אתה בטוח שברצונך למחוק את הפרס הזה? פעולה זו אינה ניתנת לביטול.</p>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg animate-fade-up">
+            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              מחיקת פרס
+            </h3>
+            <p className="mb-2">האם אתה בטוח שברצונך למחוק את הפרס הזה?</p>
+            <p className="text-sm text-red-600">פעולה זו אינה ניתנת לביטול.</p>
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 border rounded-md"
+                className="px-4 py-2 border rounded-md bg-white hover:bg-gray-50"
               >
                 ביטול
               </button>
               <button
                 onClick={deleteReward}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-1.5"
               >
+                <Trash2 className="w-4 h-4" />
                 מחק פרס
               </button>
             </div>
