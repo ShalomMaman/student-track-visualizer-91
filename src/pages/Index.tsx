@@ -1,7 +1,9 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { StudentCard } from "@/components/StudentCard";
 import { PerformanceChart } from "@/components/PerformanceChart";
+import { Cog, ClipboardList, LayoutDashboard } from "lucide-react";
 
 const students = [
   {
@@ -28,16 +30,39 @@ const students = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#fafafa] p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <header className="space-y-2">
-          <h1 className="font-display text-4xl font-semibold tracking-tight">
-            מעקב התקדמות תלמידים
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            ניטור וניתוח ביצועי תלמידים בזמן אמת
-          </p>
+        <header className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <LayoutDashboard className="w-6 h-6 text-primary" />
+              <h1 className="font-display text-4xl font-semibold tracking-tight">
+                מעקב התקדמות תלמידים
+              </h1>
+            </div>
+            <p className="text-muted-foreground text-lg">
+              ניטור וניתוח ביצועי תלמידים בזמן אמת
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => navigate('/assignments')}
+              className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
+            >
+              <ClipboardList className="w-5 h-5" />
+              משימות
+            </button>
+            <button 
+              onClick={() => navigate('/settings')}
+              className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
+            >
+              <Cog className="w-5 h-5" />
+              הגדרות
+            </button>
+          </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

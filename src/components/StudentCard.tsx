@@ -1,16 +1,27 @@
 
 import { GraduationCap, ChartBar, Book } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface StudentCardProps {
+  id: number;
   name: string;
   grade: string;
   progress: number;
   subjects: string[];
 }
 
-export const StudentCard = ({ name, grade, progress, subjects }: StudentCardProps) => {
+export const StudentCard = ({ id, name, grade, progress, subjects }: StudentCardProps) => {
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    navigate(`/student/${id}`);
+  };
+  
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-up">
+    <div 
+      className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-up cursor-pointer"
+      onClick={handleClick}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 p-2 rounded-full">
