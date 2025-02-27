@@ -16,46 +16,17 @@ export function ThemeToggle() {
       setTheme("system");
       applyTheme("system");
     }
-
-    // Add event listener for system theme changes
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => {
-      if (theme === "system") {
-        applyTheme("system");
-      }
-    };
-    
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
+  }, []);
 
   const applyTheme = (newTheme: "light" | "dark" | "system") => {
     const root = window.document.documentElement;
-    
-    // Clear existing theme classes
     root.classList.remove("light", "dark");
     
-    // Determine which theme to apply
     const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     const themeToApply = newTheme === "system" ? systemTheme : newTheme;
     
-    // Apply the theme class
     root.classList.add(themeToApply);
-    
-    // Store user preference
     localStorage.setItem("theme", newTheme);
-
-    // Update the CSS color scheme
-    document.documentElement.style.colorScheme = themeToApply;
-
-    // Update meta theme-color for mobile devices
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute(
-        "content", 
-        themeToApply === "dark" ? "#171717" : "#ffffff"
-      );
-    }
   };
 
   const toggleTheme = () => {
@@ -73,7 +44,6 @@ export function ThemeToggle() {
         theme === "dark" ? "תצוגת לילה" : 
         "תצוגת מערכת"
       }`}
-      type="button"
     >
       {theme === "light" && <Sun className="w-4 h-4" />}
       {theme === "dark" && <Moon className="w-4 h-4" />}
