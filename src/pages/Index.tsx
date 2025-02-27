@@ -3,7 +3,51 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { StudentCard } from "@/components/StudentCard";
 import { PerformanceChart } from "@/components/PerformanceChart";
-import { Cog, ClipboardList, LayoutDashboard, Search, Plus, X, Gift, Trophy, Crown, Award, Star, Filter, Bell, Zap, BookOpen, GraduationCap, CheckCircle, Calendar, User, ArrowUpRight } from "lucide-react";
+import { SyncIndicator } from "@/components/SyncIndicator";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppVersionIndicator } from "@/components/AppVersionIndicator";
+import { QuickHelpButton } from "@/components/QuickHelpButton";
+import { Cog, ClipboardList, LayoutDashboard, Search, Plus, X, Gift, Trophy, Crown, Award, Star, Filter, Bell, Zap, BookOpen, GraduationCap, CheckCircle, Calendar, User, ArrowUpRight, UserPlus, Clock, Download, HelpCircle, Settings, Lightbulb } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+
+// שימור נתוני סטטיסטיקה שבועית לצורך השוואה
+const weeklyStats = {
+  previousWeek: {
+    totalProgress: 72,
+    averageScore: 78,
+    completedTasks: 24
+  },
+  currentWeek: {
+    totalProgress: 79,
+    averageScore: 83,
+    completedTasks: 31
+  }
+};
+
+const calculateImprovement = (current: number, previous: number) => {
+  const diff = current - previous;
+  return {
+    value: diff,
+    percentage: ((diff / previous) * 100).toFixed(1),
+    improved: diff > 0
+  };
+};
+
+// חישוב שיפור שבועי
+const progressImprovement = calculateImprovement(
+  weeklyStats.currentWeek.totalProgress,
+  weeklyStats.previousWeek.totalProgress
+);
+
+const scoreImprovement = calculateImprovement(
+  weeklyStats.currentWeek.averageScore,
+  weeklyStats.previousWeek.averageScore
+);
+
+const tasksImprovement = calculateImprovement(
+  weeklyStats.currentWeek.completedTasks,
+  weeklyStats.previousWeek.completedTasks
+);
 
 const students = [
   {
@@ -61,6 +105,8 @@ const Index = () => {
   const [spinWheel, setSpinWheel] = useState(false);
   const [wheelResult, setWheelResult] = useState<number | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [timeFrame, setTimeFrame] = useState<"day" | "week" | "month">("week");
+  const [showSettings, setShowSettings] = useState(false);
 
   // מידע מערכת הפרסים
   const rewardsSystem = {
@@ -193,10 +239,50 @@ const Index = () => {
     }
   ];
 
-  // Calculate statistics
+  // טיפים מקצועיים - חדש
+  const teachingTips = [
+    {
+      id: 1,
+      title: "שיפור מיומנויות קריאה",
+      description: "תלמידי כיתה ג' מראים קושי בהבנת הנקרא. שקול להשתמש בפעילויות אינטראקטיביות.",
+      category: "קריאה",
+      relevance: 92
+    },
+    {
+      id: 2,
+      title: "טכניקות ריכוז",
+      description: "יוסי אברהם מתקשה בריכוז לאורך זמן. טכניקת 'פומודורו' יכולה לעזור.",
+      category: "התנהגות",
+      relevance: 85
+    },
+    {
+      id: 3,
+      title: "חיזוק מיומנויות חשבון",
+      description: "תלמידי כיתה ד' זקוקים לתרגול נוסף בשברים. הוספנו משחק דיגיטלי חדש.",
+      category: "חשבון",
+      relevance: 78
+    }
+  ];
+
+  // חישוב סטטיסטיקות
   const totalStudents = students.length;
   const averageProgress = Math.round(students.reduce((sum, student) => sum + student.progress, 0) / totalStudents);
   const subjectsCount = [...new Set(students.flatMap(student => student.subjects))].length;
+
+  // הוספת טוסט ברוכים הבאים בטעינת הדף
+  useEffect(() => {
+    const hasSeenWelcome = sessionStorage.getItem("hasSeenWelcome") === "true";
+    
+    if (!hasSeenWelcome) {
+      setTimeout(() => {
+        toast({
+          title: "ברוך הבא למערכת המעקב והתגמולים",
+          description: "כל הנתונים מסונכרנים ומעודכנים לרגע זה",
+        });
+        sessionStorage.setItem("hasSeenWelcome", "true");
+      }, 1000);
+    }
+  }, []);
 
   useEffect(() => {
     // Apply filters on students
@@ -249,6 +335,23 @@ const Index = () => {
       const randomPrize = Math.floor(Math.random() * rewardsSystem.wheelPrizes.length);
       setWheelResult(randomPrize);
       
+      const prizeValue = rewardsSystem.wheelPrizes[randomPrize].value;
+      
+      // מציג התראה על תוצאת הגלגל
+      if (prizeValue > 0) {
+        toast({
+          title: `זכית ב-${prizeValue} נקודות!`,
+          description: "הנקודות נוספו לחשבונך",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "אין זכייה הפעם",
+          description: "נסה שוב בשבוע הבא",
+          variant: "default",
+        });
+      }
+      
       // מאפס את הגלגל אחרי 5 שניות
       setTimeout(() => {
         setSpinWheel(false);
@@ -276,6 +379,53 @@ const Index = () => {
       case "attendance": return <User className="w-4 h-4 text-red-600" />;
       default: return <Bell className="w-4 h-4 text-gray-600" />;
     }
+  };
+
+  // פונקציה לטיפול באירוע הוספת תלמיד
+  const handleAddStudent = () => {
+    navigate('/add-student');
+    toast({
+      title: "עובר לטופס הוספת תלמיד חדש",
+      description: "הפרטים יסונכרנו אוטומטית עם המערכת"
+    });
+  };
+
+  // פונקציה להורדת דו"ח
+  const handleDownloadReport = () => {
+    toast({
+      title: "מכין דו״ח למורה",
+      description: "הדו״ח יהיה מוכן להורדה בעוד רגע"
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "הדו״ח מוכן להורדה",
+        description: "לחץ כאן להורדת קובץ הדו״ח",
+        action: (
+          <button 
+            className="bg-primary text-white px-3 py-1 rounded-md text-xs flex items-center gap-1"
+            onClick={() => {
+              toast({
+                title: "הדו״ח הורד בהצלחה",
+                description: "הקובץ נשמר במחשבך"
+              });
+            }}
+          >
+            <Download className="w-3 h-3" />
+            הורד
+          </button>
+        ),
+      });
+    }, 2000);
+  };
+
+  // פונקציה לסימון כל ההתראות כנקראו
+  const markAllNotificationsAsRead = () => {
+    toast({
+      title: "כל ההתראות סומנו כנקראו",
+      description: "ניתן לצפות בהיסטוריית התראות בעמוד ההתראות"
+    });
+    setShowNotifications(false);
   };
 
   const uniqueGrades = [...new Set(students.map(student => student.grade))];
@@ -329,16 +479,23 @@ const Index = () => {
                 >
                   <Bell className="w-5 h-5" />
                   התראות
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
-                    {notifications.filter(n => n.unread).length}
-                  </span>
+                  {notifications.filter(n => n.unread).length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
+                      {notifications.filter(n => n.unread).length}
+                    </span>
+                  )}
                 </button>
                 
                 {showNotifications && (
                   <div className="absolute left-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg z-50 overflow-hidden animate-fade-up">
                     <div className="p-3 border-b bg-gray-50 flex justify-between items-center">
                       <h3 className="font-medium">התראות</h3>
-                      <button className="text-xs text-primary hover:underline">סמן הכל כנקרא</button>
+                      <button 
+                        className="text-xs text-primary hover:underline"
+                        onClick={markAllNotificationsAsRead}
+                      >
+                        סמן הכל כנקרא
+                      </button>
                     </div>
                     <div className="max-h-96 overflow-y-auto divide-y">
                       {notifications.map(notification => (
@@ -379,7 +536,7 @@ const Index = () => {
                 משימות
               </button>
               <button 
-                onClick={() => navigate('/settings')}
+                onClick={() => setShowSettings(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-md bg-white hover:bg-accent transition-colors shadow-sm"
               >
                 <Cog className="w-5 h-5" />
@@ -394,10 +551,132 @@ const Index = () => {
               </button>
             </div>
           </div>
+          
+          {/* סרגל סטטוס מערכת */}
+          <div className="flex flex-wrap justify-between items-center gap-3 mt-4 pt-4 border-t">
+            <div className="flex items-center gap-3">
+              <SyncIndicator />
+              <ThemeToggle />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownloadReport}
+                className="text-sm text-primary flex items-center gap-1 px-3 py-1.5 hover:bg-primary/5 rounded-md transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>דו״ח למורה</span>
+              </button>
+              <div className="h-4 border-r mx-1"></div>
+              <AppVersionIndicator />
+            </div>
+          </div>
         </header>
         
-        {/* דף הבית המשופר - סיכום מידע */}
+        {/* חלק עליון - סיכומים, סקירה כללית וסטטיסטיקות */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* כרטיסי סיכום תקופתיים */}
+          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-green-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-1 mb-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <h3 className="font-medium">התקדמות תלמידים</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-green-700">{weeklyStats.currentWeek.totalProgress}%</p>
+                  <div className="flex items-center mt-1">
+                    {progressImprovement.improved ? (
+                      <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex items-center">
+                        <ArrowUpRight className="w-3 h-3 mr-0.5" />
+                        עלייה של {progressImprovement.percentage}%
+                      </span>
+                    ) : (
+                      <span className="text-xs text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">
+                        ירידה של {Math.abs(Number(progressImprovement.percentage))}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1 text-sm">
+                  <button 
+                    onClick={() => setTimeFrame("day")}
+                    className={`px-2 py-1 rounded ${timeFrame === "day" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                  >
+                    יום
+                  </button>
+                  <button 
+                    onClick={() => setTimeFrame("week")}
+                    className={`px-2 py-1 rounded ${timeFrame === "week" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                  >
+                    שבוע
+                  </button>
+                  <button 
+                    onClick={() => setTimeFrame("month")}
+                    className={`px-2 py-1 rounded ${timeFrame === "month" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                  >
+                    חודש
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-blue-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-1 mb-2">
+                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-medium">ממוצע ציונים</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-700">{weeklyStats.currentWeek.averageScore}</p>
+                  <div className="flex items-center mt-1">
+                    {scoreImprovement.improved ? (
+                      <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex items-center">
+                        <ArrowUpRight className="w-3 h-3 mr-0.5" />
+                        עלייה של {scoreImprovement.percentage}%
+                      </span>
+                    ) : (
+                      <span className="text-xs text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">
+                        ירידה של {Math.abs(Number(scoreImprovement.percentage))}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                  השבוע הנוכחי
+                </span>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-purple-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-1 mb-2">
+                    <ClipboardList className="w-5 h-5 text-purple-600" />
+                    <h3 className="font-medium">משימות שהושלמו</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-purple-700">{weeklyStats.currentWeek.completedTasks}</p>
+                  <div className="flex items-center mt-1">
+                    {tasksImprovement.improved ? (
+                      <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex items-center">
+                        <ArrowUpRight className="w-3 h-3 mr-0.5" />
+                        עלייה של {tasksImprovement.value} משימות
+                      </span>
+                    ) : (
+                      <span className="text-xs text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">
+                        ירידה של {Math.abs(tasksImprovement.value)} משימות
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="bg-purple-100 rounded-full p-2">
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <span className="text-lg font-bold text-purple-700">{totalStudents}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        
           {/* המידע הסטטיסטי */}
           <div className="lg:col-span-8 bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
@@ -457,7 +736,10 @@ const Index = () => {
             </div>
             
             <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">פעילות אחרונה</h3>
+              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                פעילות אחרונה
+              </h3>
               <div className="space-y-3">
                 {recentActivities.map((activity) => (
                   <div key={activity.id} className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors">
@@ -503,7 +785,7 @@ const Index = () => {
             </div>
           </div>
           
-          {/* מטלות קרובות */}
+          {/* אזור ימני - מטלות קרובות וסיכום מערכת הפרסים */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-4">
@@ -598,6 +880,45 @@ const Index = () => {
               >
                 <Gift className="w-4 h-4" />
                 ניהול מערכת הפרסים
+              </button>
+            </div>
+            
+            {/* חדש: טיפים מקצועיים */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border-2 border-blue-100">
+              <h2 className="font-display text-xl font-medium flex items-center gap-2 mb-4">
+                <Lightbulb className="w-5 h-5 text-yellow-500" />
+                טיפים פדגוגיים
+              </h2>
+              
+              <div className="space-y-3">
+                {teachingTips.map((tip) => (
+                  <div 
+                    key={tip.id} 
+                    className="border rounded-lg p-3 hover:border-primary hover:bg-blue-50/30 transition-all cursor-pointer"
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-medium">{tip.title}</h4>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
+                        {tip.category}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{tip.description}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full mr-2">
+                        <div 
+                          className="bg-blue-500 h-1.5 rounded-full" 
+                          style={{ width: `${tip.relevance}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs text-blue-700 whitespace-nowrap">{tip.relevance}% רלוונטי</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <button className="w-full mt-4 py-2.5 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-md transition-all flex items-center justify-center gap-1.5">
+                <Lightbulb className="w-4 h-4" />
+                כל הטיפים הפדגוגיים
               </button>
             </div>
           </div>
@@ -811,7 +1132,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* Filters */}
+        {/* פילטרים וחיפוש תלמידים */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
             <h2 className="font-display text-xl font-medium flex items-center gap-2">
@@ -850,10 +1171,10 @@ const Index = () => {
           
           <div className="flex items-center justify-end mb-2">
             <button 
-              onClick={() => navigate('/add-student')}
+              onClick={handleAddStudent}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-primary hover:bg-primary/5 transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <UserPlus className="w-4 h-4" />
               הוסף תלמיד חדש
             </button>
             <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">
@@ -863,7 +1184,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Students cards */}
+        {/* כרטיסי תלמידים */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredStudents.length > 0 ? (
             filteredStudents.map((student) => (
@@ -949,6 +1270,9 @@ const Index = () => {
         }
         `}
       </style>
+      
+      {/* הוספת כפתור עזרה מהירה */}
+      <QuickHelpButton />
     </div>
   );
 };
