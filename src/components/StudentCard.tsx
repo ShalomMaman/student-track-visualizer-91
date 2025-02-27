@@ -26,7 +26,7 @@ export const StudentCard = ({ name, grade, progress, subjects }: StudentCardProp
       <div className="space-y-4">
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Overall Progress</span>
+            <span className="text-sm font-medium">התקדמות כללית</span>
             <span className="text-sm text-primary">{progress}%</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">

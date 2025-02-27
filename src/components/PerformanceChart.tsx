@@ -11,11 +11,11 @@ import {
 } from "recharts";
 
 const data = [
-  { name: "Week 1", score: 65 },
-  { name: "Week 2", score: 72 },
-  { name: "Week 3", score: 68 },
-  { name: "Week 4", score: 78 },
-  { name: "Week 5", score: 85 },
+  { name: "שבוע 1", score: 65 },
+  { name: "שבוע 2", score: 72 },
+  { name: "שבוע 3", score: 68 },
+  { name: "שבוע 4", score: 78 },
+  { name: "שבוע 5", score: 85 },
 ];
 
 export const PerformanceChart = () => {
@@ -23,7 +23,7 @@ export const PerformanceChart = () => {
     <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-up">
       <div className="flex items-center gap-2 mb-6">
         <ChartLine className="w-5 h-5 text-primary" />
-        <h3 className="font-display text-lg font-medium">Performance Trend</h3>
+        <h3 className="font-display text-lg font-medium">מגמת ביצועים</h3>
       </div>
       
       <div className="h-[300px] w-full">
