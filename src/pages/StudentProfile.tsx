@@ -1,5 +1,5 @@
 
-import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, ChatBubble, GraduationCap, ListChecks, Trophy } from "lucide-react";
+import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, MessageCircle, GraduationCap, ListChecks, Trophy, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { StudentPerformanceChart } from "@/components/StudentPerformanceChart";
 import { SkillRadarChart } from "@/components/SkillRadarChart";
@@ -287,7 +287,7 @@ const StudentProfile = () => {
           {/* הערות מורים */}
           <div className="bg-white rounded-xl p-6 shadow-sm animate-fade-up">
             <div className="flex items-center gap-2 mb-6">
-              <ChatBubble className="w-5 h-5 text-primary" />
+              <MessageCircle className="w-5 h-5 text-primary" />
               <h2 className="font-display text-lg font-medium">הערות מורים</h2>
             </div>
             
