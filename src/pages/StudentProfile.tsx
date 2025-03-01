@@ -1,8 +1,7 @@
-<lov-code>
+
 import { ArrowRight, BookOpen, BookText, CalendarRange, ChartBarIcon, MessageCircle, GraduationCap, ListChecks, Trophy, Plus, Award, Gift, Star, Zap, Medal, Crown, Lock, UserRound, Edit, Save, Trash2, AlertTriangle, Check, X, Filter, Info, Clock, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-// Removed StudentPerformanceChart import since it's no longer needed
 import { SkillRadarChart } from "@/components/SkillRadarChart";
 import { UpcomingAssignments } from "@/components/UpcomingAssignments";
 import { AttendanceCalendar } from "@/components/AttendanceCalendar";
@@ -461,7 +460,7 @@ const StudentProfile = () => {
     return {
       text: "הושג ונמסר",
       color: "text-green-600",
-        bgColor: "bg-green-50",
+      bgColor: "bg-green-50",
       icon: <Check className="w-4 h-4" />
     };
   };
@@ -706,4 +705,417 @@ const StudentProfile = () => {
                       </div>
                       
                       <h3 className="font-medium text-xl">הנקודות של {student.name}</h3>
-                      <p className="text
+                      <p className="text-3xl font-bold text-primary mt-2">{rewardsSystem.points}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Zap className="w-4 h-4 text-amber-500" />
+                        <span className="text-sm">{rewardsSystem.streakDays} ימים רצופים</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border-t">
+                    <h4 className="font-medium mb-2">הישגים אחרונים</h4>
+                    <div className="space-y-2">
+                      {achievements.map(achievement => (
+                        <div key={achievement.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50">
+                          <div className="mt-0.5">{achievement.icon}</div>
+                          <div>
+                            <p className="text-sm font-medium">{achievement.title}</p>
+                            <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{achievement.date}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* סינון ותצוגת הפרסים */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Filter className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">סינון פרסים:</span>
+                    <div className="flex gap-1">
+                      <button 
+                        onClick={() => setActiveRewardsCategory("all")}
+                        className={`px-2 py-1 rounded text-xs ${activeRewardsCategory === "all" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
+                      >
+                        הכל
+                      </button>
+                      <button 
+                        onClick={() => setActiveRewardsCategory("real")}
+                        className={`px-2 py-1 rounded text-xs ${activeRewardsCategory === "real" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
+                      >
+                        פרסים פיזיים
+                      </button>
+                      <button 
+                        onClick={() => setActiveRewardsCategory("avatar")}
+                        className={`px-2 py-1 rounded text-xs ${activeRewardsCategory === "avatar" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
+                      >
+                        אווטר
+                      </button>
+                      <button 
+                        onClick={() => setActiveRewardsCategory("certificate")}
+                        className={`px-2 py-1 rounded text-xs ${activeRewardsCategory === "certificate" ? "bg-primary text-white" : "bg-accent hover:bg-accent/80"}`}
+                      >
+                        תעודות
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {filteredRewards.map(reward => {
+                      const status = getRewardStatus(reward);
+                      
+                      return (
+                        <div 
+                          key={reward.id} 
+                          className={`border rounded-lg overflow-hidden hover:border-primary/50 transition-colors ${editingRewardId === reward.id ? 'border-primary/50 ring-1 ring-primary/30' : ''}`}
+                        >
+                          {editingRewardId === reward.id ? (
+                            // מצב עריכה
+                            <div className="p-4">
+                              <h4 className="font-medium mb-3 text-center">עריכת פרטי פרס</h4>
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                                    שם הפרס
+                                  </label>
+                                  <input 
+                                    type="text" 
+                                    value={editedReward.title}
+                                    onChange={(e) => setEditedReward({...editedReward, title: e.target.value})}
+                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                                    נקודות נדרשות
+                                  </label>
+                                  <input 
+                                    type="number" 
+                                    value={editedReward.points}
+                                    onChange={(e) => setEditedReward({...editedReward, points: parseInt(e.target.value) || 0})}
+                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                  />
+                                </div>
+                                {reward.type === "real" && (
+                                  <>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                                        מיקום הפרס
+                                      </label>
+                                      <input 
+                                        type="text" 
+                                        value={editedReward.location}
+                                        onChange={(e) => setEditedReward({...editedReward, location: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-md text-sm"
+                                        placeholder="לדוגמא: ארון כיתה, מדף עליון"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                                        הערות למורה
+                                      </label>
+                                      <textarea 
+                                        value={editedReward.teacherNotes}
+                                        onChange={(e) => setEditedReward({...editedReward, teacherNotes: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-md text-sm"
+                                        rows={2}
+                                        placeholder="הערות נוספות לגבי הפרס"
+                                      />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input 
+                                        type="checkbox" 
+                                        id={`delivered-${reward.id}`}
+                                        checked={editedReward.isDelivered}
+                                        onChange={(e) => setEditedReward({...editedReward, isDelivered: e.target.checked})}
+                                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                      />
+                                      <label htmlFor={`delivered-${reward.id}`} className="text-sm text-gray-600">
+                                        הפרס נמסר לתלמיד/ה
+                                      </label>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex justify-between mt-4">
+                                <button 
+                                  onClick={() => setEditingRewardId(null)} 
+                                  className="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 text-sm flex items-center gap-1"
+                                >
+                                  <X className="w-4 h-4" />
+                                  ביטול
+                                </button>
+                                <button 
+                                  onClick={saveRewardChanges} 
+                                  className="px-3 py-1.5 rounded-md bg-primary text-white text-sm flex items-center gap-1"
+                                >
+                                  <Save className="w-4 h-4" />
+                                  שמירה
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            // מצב תצוגה
+                            <>
+                              <div className="flex p-3 bg-gray-50">
+                                <div className="w-16 h-16 mr-3 flex-shrink-0">
+                                  <img src={reward.image} alt={reward.title} className="w-full h-full object-contain" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{reward.title}</h4>
+                                      <div className="flex items-center gap-1 mt-1">
+                                        <span className={`text-xs px-1.5 py-0.5 rounded ${getRewardTypeColor(reward.type)}`}>
+                                          {getRewardTypeText(reward.type)}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {reward.points} נקודות
+                                        </span>
+                                      </div>
+                                    </div>
+                                    {isTeacherMode && (
+                                      <div className="flex space-x-1">
+                                        <button 
+                                          onClick={() => setEditingRewardId(reward.id)}
+                                          className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                                          title="ערוך פרס"
+                                        >
+                                          <Edit className="w-4 h-4 text-gray-500" />
+                                        </button>
+                                        <button 
+                                          onClick={() => {
+                                            setRewardToDelete(reward.id);
+                                            setShowConfirmModal(true);
+                                          }}
+                                          className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                                          title="מחק פרס"
+                                        >
+                                          <Trash2 className="w-4 h-4 text-gray-500" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="px-3 pb-3">
+                                {/* פרוגרס בר */}
+                                <div className="mt-2">
+                                  <div className="flex justify-between items-center text-xs mb-1">
+                                    <span className="text-muted-foreground">התקדמות</span>
+                                    <span>{reward.progress}%</span>
+                                  </div>
+                                  <div className="w-full bg-gray-100 rounded-full h-2">
+                                    <div 
+                                      className={`h-2 rounded-full ${reward.acquired ? 'bg-green-500' : 'bg-primary'}`}
+                                      style={{ width: `${reward.progress}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                                
+                                {/* סטטוס הפרס */}
+                                <div className={`flex items-center gap-1 mt-2 text-xs ${status.color}`}>
+                                  {status.icon}
+                                  <span>{status.text}</span>
+                                </div>
+                                
+                                {/* מידע למורה */}
+                                {isTeacherMode && reward.type === "real" && (
+                                  <div className="mt-2 pt-2 border-t border-dashed">
+                                    {reward.location && (
+                                      <div className="flex items-start gap-1 text-xs mt-1 text-gray-600">
+                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                        <span>{reward.location}</span>
+                                      </div>
+                                    )}
+                                    {reward.teacherNotes && (
+                                      <div className="flex items-start gap-1 text-xs mt-1 text-gray-600">
+                                        <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                        <span>{reward.teacherNotes}</span>
+                                      </div>
+                                    )}
+                                    
+                                    {/* כפתור סימון כנמסר */}
+                                    {reward.acquired && !reward.isDelivered && (
+                                      <button 
+                                        onClick={() => markRewardAsDelivered(reward.id)}
+                                        className="w-full mt-2 py-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded flex items-center justify-center gap-1 hover:bg-amber-100 transition-colors"
+                                      >
+                                        <Check className="w-3 h-3" />
+                                        סמן כנמסר
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* חלק הפרופיל */}
+        {selectedTab === "profile" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-up">
+            <div className="md:col-span-2 space-y-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="font-display text-xl font-medium mb-4">מידע אישי</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">תאריך לידה</h3>
+                    <p className="font-medium">{student.birthDate}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">פעילות אחרונה</h3>
+                    <p className="font-medium">{student.lastActive}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">הורים</h3>
+                    <p className="font-medium">{student.parentName}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">טלפון להורים</h3>
+                    <p className="font-medium">{student.parentContact}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="font-display text-xl font-medium mb-4">משימות אחרונות</h2>
+                <div className="space-y-4">
+                  {recentAssignments.map(assignment => (
+                    <div key={assignment.id} className="p-3 border rounded-lg flex justify-between items-center">
+                      <div>
+                        <h3 className="font-medium mb-1">{assignment.name}</h3>
+                        <div className="flex gap-3 text-sm">
+                          <span className="text-muted-foreground">תאריך יעד: {assignment.dueDate}</span>
+                          {assignment.score && <span className="text-primary font-medium">ציון: {assignment.score}</span>}
+                        </div>
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs ${getStatusColor(assignment.status)}`}>
+                        {getStatusText(assignment.status)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl p-6 shadow-sm">
+                  <h2 className="font-display text-xl font-medium mb-4 flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-primary" />
+                    חוזקות
+                  </h2>
+                  <ul className="space-y-2">
+                    {student.strengths.map((strength, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                        <span>{strength}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="bg-white rounded-xl p-6 shadow-sm">
+                  <h2 className="font-display text-xl font-medium mb-4 flex items-center gap-2">
+                    <ListChecks className="w-5 h-5 text-primary" />
+                    תחומים לשיפור
+                  </h2>
+                  <ul className="space-y-2">
+                    {student.areasForImprovement.map((area, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                        <span>{area}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="font-display text-xl font-medium mb-4 flex items-center gap-2">
+                  <ChartBarIcon className="w-5 h-5 text-primary" />
+                  כישורים
+                </h2>
+                <div className="p-4">
+                  <SkillRadarChart />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="font-display text-xl font-medium mb-4 flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                  הערות מורים
+                </h2>
+                <div className="space-y-4">
+                  {teacherNotes.map(note => (
+                    <div key={note.id} className="border-b pb-3 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <h3 className="font-medium">{note.author}</h3>
+                        <span className="text-xs text-muted-foreground">{note.date}</span>
+                      </div>
+                      <p className="text-sm">{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="font-display text-xl font-medium mb-4 flex items-center gap-2">
+                  <CalendarRange className="w-5 h-5 text-primary" />
+                  נוכחות
+                </h2>
+                <div>
+                  <AttendanceCalendar />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* מודל אישור למחיקת פרס */}
+        {showConfirmModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                אישור מחיקה
+              </h3>
+              <p className="mb-6">האם אתה בטוח שברצונך למחוק את הפרס? פעולה זו אינה ניתנת לביטול.</p>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setShowConfirmModal(false)}
+                  className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  ביטול
+                </button>
+                <button 
+                  onClick={deleteReward}
+                  className="px-4 py-2 rounded-md text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
+                >
+                  מחק פרס
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default StudentProfile;
