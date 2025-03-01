@@ -154,6 +154,77 @@ export default function StudentProfile() {
     window.history.back();
   };
 
+  // Helper function to get badge variant based on student performance
+  const getPerformanceBadgeVariant = (averageGrade: number) => {
+    if (averageGrade >= 85) return "secondary";
+    return "outline";
+  };
+
+  // Helper function to get badge text based on student performance
+  const getPerformanceBadgeText = (averageGrade: number) => {
+    if (averageGrade >= 85) return "מצטיין";
+    return "בינוני";
+  };
+
+  // Helper function to get assignment status badge variant
+  const getAssignmentStatusBadgeVariant = (status: "completed" | "pending" | "late") => {
+    switch (status) {
+      case "completed":
+        return "secondary";
+      case "pending":
+        return "outline";
+      case "late":
+        return "destructive";
+      default:
+        return "outline";
+    }
+  };
+
+  // Helper function to get assignment status text
+  const getAssignmentStatusText = (status: "completed" | "pending" | "late") => {
+    switch (status) {
+      case "completed":
+        return "הוגש";
+      case "pending":
+        return "בהמתנה";
+      case "late":
+        return "באיחור";
+      default:
+        return "";
+    }
+  };
+
+  // Helper function to get note type badge variant
+  const getNoteTypeBadgeVariant = (type: "strength" | "weakness" | "general") => {
+    switch (type) {
+      case "strength":
+        return "secondary";
+      case "weakness":
+        return "outline";
+      case "general":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
+  // Helper function to get note type text
+  const getNoteTypeText = (type: "strength" | "weakness" | "general") => {
+    switch (type) {
+      case "strength":
+        return "חוזק";
+      case "weakness":
+        return "נקודה לשיפור";
+      case "general":
+        return "הערה כללית";
+      default:
+        return "";
+    }
+  };
+
+  // Format current date to string for attendance calendar
+  const currentDateString = new Date().toISOString().split('T')[0];
+
   return (
     <div className="container pb-12">
       <div className="flex items-center justify-between py-4 border-b">
@@ -180,8 +251,8 @@ export default function StudentProfile() {
           <Card>
             <CardHeader className="relative pb-0">
               <div className="absolute right-4 top-4">
-                <Badge variant={student.averageGrade >= 85 ? "success" : "warning"}>
-                  {student.averageGrade >= 85 ? "מצטיין" : "בינוני"}
+                <Badge variant={getPerformanceBadgeVariant(student.averageGrade)}>
+                  {getPerformanceBadgeText(student.averageGrade)}
                 </Badge>
               </div>
               <div className="flex flex-col items-center">
@@ -342,7 +413,7 @@ export default function StudentProfile() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <AttendanceCalendar studentId={studentId} month={new Date()} />
+                    <AttendanceCalendar studentId={studentId} month={currentDateString} />
                   </CardContent>
                 </Card>
               </div>
@@ -463,7 +534,7 @@ export default function StudentProfile() {
                   <CardDescription>צפייה בדוח נוכחות מפורט</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AttendanceCalendar studentId={studentId} month={new Date()} />
+                  <AttendanceCalendar studentId={studentId} month={currentDateString} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -518,19 +589,9 @@ export default function StudentProfile() {
                           </div>
                         </div>
                         <Badge
-                          variant={
-                            assignment.status === "completed"
-                              ? "success"
-                              : assignment.status === "pending"
-                              ? "outline"
-                              : "destructive"
-                          }
+                          variant={getAssignmentStatusBadgeVariant(assignment.status)}
                         >
-                          {assignment.status === "completed"
-                            ? "הוגש"
-                            : assignment.status === "pending"
-                            ? "בהמתנה"
-                            : "באיחור"}
+                          {getAssignmentStatusText(assignment.status)}
                         </Badge>
                       </div>
                     ))}
@@ -576,20 +637,8 @@ export default function StudentProfile() {
                             )}
                           </div>
                           <div>
-                            <Badge
-                              variant={
-                                note.type === "strength"
-                                  ? "success"
-                                  : note.type === "weakness"
-                                  ? "warning"
-                                  : "secondary"
-                              }
-                            >
-                              {note.type === "strength"
-                                ? "חוזק"
-                                : note.type === "weakness"
-                                ? "נקודה לשיפור"
-                                : "הערה כללית"}
+                            <Badge variant={getNoteTypeBadgeVariant(note.type)}>
+                              {getNoteTypeText(note.type)}
                             </Badge>
                             <span className="text-sm text-muted-foreground ms-2">
                               {note.date}
